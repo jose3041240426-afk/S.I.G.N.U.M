@@ -1,8 +1,0 @@
-numpy
-fastapi
-uvicorn[standard]
-pydantic
-scikit-learn
-tensorflow
-python-multipart
-websockets

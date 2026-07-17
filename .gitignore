@@ -1,60 +1,24 @@
-# Python virtual environment
-venv/
-env/
-.venv/
-
-# Node.js dependencies
-node_modules/
-node/  
-
-# Next.js build output
-.next/
-out/
-
-# Python cache
+# Python
+*.py
+*.pyc
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+*.pkl
+*.npy
+*.npz
+env/
+venv/
 
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# Backend
+backend/
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
-# Modelos y datos generados (opcional, si no quieres subirlos)
-# modelo_lsm.pkl
-# modelo_palabras.pkl
-# label_encoder_palabras.pkl
-# datos_lsm/
-# datos_palabras/
-modelo_lsm.pkl
-modelo_palabras.pkl
-label_encoder_palabras.pkl
-modelo_letras_movimiento.pkl
-label_encoder_letras_movimiento.pkl
+# IDE
+.vscode/
+.idea/
+
+# Env
+.env.local
+.env*.local
