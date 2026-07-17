@@ -1,5 +1,4 @@
 {
-  "rootDirectory": "frontend",
   "buildCommand": "npx next build",
   "outputDirectory": ".next",
   "framework": "nextjs"
