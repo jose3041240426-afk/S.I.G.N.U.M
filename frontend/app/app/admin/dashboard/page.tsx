@@ -5,6 +5,7 @@ import { getCurrentUser, getUserRoles, getAllEvaluaciones } from "@/services/aut
 import { LiquidGlass } from "@/components/ui/LiquidGlass";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -136,6 +137,70 @@ export default function AdminDashboard() {
     doc.save("evaluaciones-signum.pdf");
   }, [evaluaciones, total]);
 
+  const exportExcel = useCallback(() => {
+    const wb = XLSX.utils.book_new();
+
+    const indivRows = evaluaciones.map((e) => ({
+      Fecha: e.fecha ? new Date(e.fecha).toLocaleDateString("es-MX") : "-",
+      Usuario: e.usuarios ? `${e.usuarios.nombre} ${e.usuarios.apellido_paterno}` : "Anónimo",
+      Dispositivo: e.dispositivo || "-",
+      Navegador: e.navegador || "-",
+      "Resolución": e.resolucion || "-",
+      Iluminación: e.iluminacion || "-",
+      Distancia: e.distancia || "-",
+      "Uso frecuente (1-5)": e.p4_uso_frecuente ?? "-",
+      "Complicado de usar (1-5)": e.p5_complicado ?? "-",
+      "Fácil de interactuar (1-5)": e.p6_facil_interactuar ?? "-",
+      "Necesita ayuda técnica (1-5)": e.p7_necesita_ayuda ?? "-",
+      "Traducción natural (1-5)": e.p8_traduccion_natural ?? "-",
+      "Satisfacción voz (1-5)": e.voz_satisfaccion ?? "-",
+      "Esfuerzo mental": e.esfuerzo_mental || "-",
+      "Exp. General (1-5)": e.experiencia_general ?? "-",
+      Recomienda: e.recomendaria || "-",
+      "Fácil de aprender (1-5)": e.facil_aprender ?? "-",
+      "Utilidad educativa (1-5)": e.util_educativo ?? "-",
+      "Experiencia previa": e.experiencia_previa || "-",
+      Problemas: e.problemas || "-",
+      Sugerencias: e.sugerencias || "-",
+      "Función más útil": e.funcion_mas_util || "-",
+      "Señas difíciles": e.senas_dificiles || "-",
+    }));
+    const ws1 = XLSX.utils.json_to_sheet(indivRows);
+    XLSX.utils.book_append_sheet(wb, ws1, "Respuestas individuales");
+
+    const likertRows = [
+      ["Pregunta", "Promedio"],
+      ["Uso frecuente", avgLikert("p4_uso_frecuente")],
+      ["Complicado de usar", avgLikert("p5_complicado")],
+      ["Fácil de interactuar", avgLikert("p6_facil_interactuar")],
+      ["Necesita ayuda técnica", avgLikert("p7_necesita_ayuda")],
+      ["Traducción natural", avgLikert("p8_traduccion_natural")],
+      ["Experiencia general", avgLikert("experiencia_general")],
+      ["Fácil de aprender", avgLikert("facil_aprender")],
+      ["Utilidad educativa", avgLikert("util_educativo")],
+      ["Satisfacción con voz", avgLikert("voz_satisfaccion")],
+    ];
+    const ws2 = XLSX.utils.aoa_to_sheet(likertRows);
+    XLSX.utils.book_append_sheet(wb, ws2, "Promedios");
+
+    const addDistSheet = (label: string, options: string[], field: string) => {
+      const rows = [["Opción", "Conteo", "%"]];
+      options.forEach((o) => rows.push([o, count(field, o).toString(), `${pct(field, o)}%`]));
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, label);
+    };
+    addDistSheet("Resolución", ["Alta resolución (HD/Full HD)", "Resolución estándar", "No estoy seguro/a"], "resolucion");
+    addDistSheet("Iluminación", ["Buena y constante", "Un poco oscura o con luz variable"], "iluminacion");
+    addDistSheet("Distancia", ["Muy cerca (menos de 50 cm)", "A una distancia cómoda (50 cm a 1 metro)", "Lejos (más de 1 metro)"], "distancia");
+    addDistSheet("Esfuerzo mental", [
+      "Fue muy fácil, no requirió esfuerzo.",
+      "Requirió un poco de atención, pero fue fluido.",
+      "Tuve que concentrarme mucho y hacer mucho esfuerzo mental.",
+    ], "esfuerzo_mental");
+
+    XLSX.writeFile(wb, "evaluaciones-signum.xlsx");
+  }, [evaluaciones, total]);
+
   if (loading) return (
     <div style={{ display: "flex", justifyContent: "center", padding: "4rem" }}>
       <span className="ai-loader"><span className="bar"/><span className="bar"/><span className="bar"/></span>
@@ -175,6 +240,28 @@ export default function AdminDashboard() {
             <polyline points="10 9 9 9 8 9"/>
           </svg>
           Exportar PDF
+        </button>
+        <button onClick={exportExcel} disabled={total === 0} style={{
+          padding: "10px 20px",
+          borderRadius: "50px",
+          border: "none",
+          background: total === 0 ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg, #166534, #22c55e)",
+          color: "#fff",
+          fontSize: "0.9rem",
+          fontWeight: 600,
+          cursor: total === 0 ? "not-allowed" : "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="8" y1="13" x2="16" y2="13"/>
+            <line x1="8" y1="17" x2="16" y2="17"/>
+            <polyline points="9 9 10 9 11 9"/>
+          </svg>
+          Exportar Excel
         </button>
       </div>
 
