@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { signIn, getCurrentUser } from "@/services/auth.service";
+import { signIn, getCurrentUser, getAuthErrorMessage, probeSupabaseConnectivity } from "@/services/auth.service";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,11 +26,18 @@ export default function LoginPage() {
       await signIn(email, password);
       router.push("/app");
     } catch (err: any) {
-      setError(err.message || "Error al iniciar sesión");
+      console.error("Error en login:", err);
+      let msg = getAuthErrorMessage(err, "Error al iniciar sesión");
+      if (err?.name === "AuthRetryableFetchError" || err?.status === 0) {
+        const diag = await probeSupabaseConnectivity();
+        msg = `${msg} [Diagnóstico: ${diag}]`;
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div

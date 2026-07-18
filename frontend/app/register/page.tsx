@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { signUp, getGeneros, getCurrentUser } from "@/services/auth.service";
+import { signUp, getGeneros, getCurrentUser, getAuthErrorMessage, probeSupabaseConnectivity } from "@/services/auth.service";
 
 type Genero = { id_genero: number; genero: string };
 
@@ -39,7 +39,7 @@ export default function RegisterPage() {
       router.push("/login");
     } catch (err: any) {
       console.error("Error en registro:", err);
-      setError(err?.message || JSON.stringify(err) || "Error al registrarse");
+      setError(getAuthErrorMessage(err, "Error al registrarse"));
     } finally {
       setLoading(false);
     }

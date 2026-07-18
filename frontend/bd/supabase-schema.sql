@@ -168,10 +168,14 @@ BEGIN
 
   RETURN NEW;
 EXCEPTION
-  WHEN others THEN
-    -- Si el perfil falla, el login de Supabase NO se bloquea
-    RAISE WARNING 'handle_new_user: error al crear perfil para %, SQLSTATE: %, SQLERRM: %', NEW.id, SQLSTATE, SQLERRM;
+  WHEN unique_violation THEN
+    -- El perfil ya existe (re-llamada del trigger). No es un error.
     RETURN NEW;
+  WHEN others THEN
+    -- Registrar el fallo pero propagarlo para que el problema sea visible
+    -- y no queden usuarios sin perfil (que se verían como "Anónimo").
+    RAISE WARNING 'handle_new_user: error al crear perfil para %, SQLSTATE: %, SQLERRM: %', NEW.id, SQLSTATE, SQLERRM;
+    RAISE EXCEPTION 'No se pudo crear el perfil del usuario. SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
 END;
 $$;
 
@@ -253,14 +257,16 @@ CREATE POLICY "Usuarios pueden actualizar sus propios avances"
   ON public.avances FOR UPDATE
   USING (auth.uid() = id_usuario);
 
--- Evaluaciones: cualquier usuario autenticado puede insertar su propia evaluacion
+-- Evaluaciones: cualquier usuario autenticado puede insertar su propia evaluacion.
+-- No se permiten evaluaciones anonimas (id_usuario IS NULL) para que siempre
+-- se pueda identificar al autor en el dashboard.
 CREATE POLICY "Usuarios pueden insertar evaluaciones"
   ON public.evaluaciones FOR INSERT
-  WITH CHECK (auth.uid() = id_usuario OR id_usuario IS NULL);
+  WITH CHECK (auth.uid() = id_usuario);
 
 CREATE POLICY "Usuarios pueden ver sus propias evaluaciones"
   ON public.evaluaciones FOR SELECT
-  USING (auth.uid() = id_usuario OR id_usuario IS NULL);
+  USING (auth.uid() = id_usuario);
 
 CREATE POLICY "Administradores pueden ver todas las evaluaciones"
   ON public.evaluaciones FOR SELECT

@@ -1,4 +1,34 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseConfig } from "@/lib/supabase";
+
+export function getAuthErrorMessage(err: any, fallback: string): string {
+  if (!err) return fallback;
+  const name = err?.name;
+  const status = err?.status;
+  const raw = typeof err?.message === "string" ? err.message : "";
+  const isEmptyish = !raw.trim() || raw.trim() === "{}";
+  if (name === "AuthRetryableFetchError" || status === 0 || isEmptyish) {
+    return "No se pudo conectar con el servidor. Revisa tu conexión a internet e inténtalo de nuevo.";
+  }
+  return raw || fallback;
+}
+
+export async function probeSupabaseConnectivity(): Promise<string> {
+  const url = supabaseConfig.url;
+  if (!url) {
+    return `ENV FALTANTE: NEXT_PUBLIC_SUPABASE_URL no está definida en el cliente`;
+  }
+  if (!supabaseConfig.hasKey) {
+    return `ENV FALTANTE: NEXT_PUBLIC_SUPABASE_ANON_KEY no está definida en el cliente`;
+  }
+  try {
+    const res = await fetch(`${url}/auth/v1/health`, {
+      headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! },
+    });
+    return `fetch OK: HTTP ${res.status}`;
+  } catch (e: any) {
+    return `fetch FALLÓ: ${e?.name || "Error"}: ${e?.message || "(sin mensaje)"}`;
+  }
+}
 
 export async function signUp(
   email: string,
@@ -37,23 +67,6 @@ export async function signIn(email: string, password: string) {
   });
 
   if (error) throw error;
-
-  // Intentar obtener la IP real
-  let ip = "Desconocida";
-  try {
-    const res = await fetch("https://api.ipify.org?format=json");
-    if (res.ok) {
-      const json = await res.json();
-      ip = json.ip;
-    }
-  } catch (e) {
-    console.error("No se pudo obtener la IP:", e);
-  }
-
-  await supabase.from("login").insert({
-    id_usuario: data.user.id,
-    direccion_ip: ip,
-  });
 
   return data;
 }
@@ -232,11 +245,37 @@ export interface EvaluacionData {
 }
 
 export async function saveEvaluation(data: EvaluacionData) {
-  const { data: user, error: userError } = await supabase.auth.getUser();
-  if (userError) console.error("[evaluacion] Error getting user:", userError);
+  const { data: userRes, error: userError } = await supabase.auth.getUser();
+  if (userError) throw new Error("Debes iniciar sesión para enviar la evaluación.");
+  if (!userRes?.user) throw new Error("Debes iniciar sesión para enviar la evaluación.");
+
+  const userId = userRes.user.id;
+
+  // Asegurar que el perfil exista en public.usuarios. Si el trigger
+  // handle_new_user falló o aún no se ejecutó (p.ej. email sin confirmar),
+  // hacemos upsert usando los metadatos de auth para que la evaluación
+  // quede vinculada y el dashboard muestre el nombre del usuario.
+  const { error: perfilError } = await supabase
+    .from("usuarios")
+    .upsert(
+      {
+        id_usuario: userId,
+        nombre: (userRes.user.user_metadata?.nombre as string) || "",
+        apellido_paterno: (userRes.user.user_metadata?.apellido_paterno as string) || "",
+        apellido_materno: (userRes.user.user_metadata?.apellido_materno as string) || "",
+        correo: userRes.user.email || "",
+        id_genero: Number(userRes.user.user_metadata?.id_genero) || 1,
+      },
+      { onConflict: "id_usuario" },
+    );
+
+  // Ignorar conflictos de RLS si el perfil ya existe y no se puede modificar.
+  if (perfilError && perfilError.code !== "23505") {
+    throw perfilError;
+  }
 
   const { error } = await supabase.from("evaluaciones").insert({
-    id_usuario: user?.user?.id || null,
+    id_usuario: userId,
     ...data,
   });
 
