@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 import Script from "next/script";
 import { FluidBackground } from "@/components/layout/FluidBackground";
 import { PageTransition } from "@/components/layout/PageTransition";
+import { ThemeProvider } from "@/components/layout/ThemeProvider";
 
 export default function RootLayout({
   children,
@@ -39,6 +40,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <body className="min-h-screen bg-transparent text-gray-900">
+        <ThemeProvider>
         <Script id="anti-devtools" strategy="beforeInteractive">
           {`
             document.addEventListener("contextmenu", e => e.preventDefault());
@@ -57,6 +59,7 @@ export default function RootLayout({
           </filter>
         </svg>
         <PageTransition>{children}</PageTransition>
+        </ThemeProvider>
       </body>
     </html>
   );

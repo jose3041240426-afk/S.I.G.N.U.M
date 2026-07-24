@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { LiquidGlass } from "@/components/ui/LiquidGlass";
 
 interface MenuDrawerProps {
   children?: React.ReactNode;
@@ -12,7 +11,7 @@ export function MenuDrawer({ children }: MenuDrawerProps) {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
-        .hamburger-btn {
+        button {
           border: none;
           background: none;
           padding: 0;
@@ -20,51 +19,83 @@ export function MenuDrawer({ children }: MenuDrawerProps) {
           cursor: pointer;
           font-family: inherit;
         }
-        .hamburger-bg {
+        .menu-bg {
           border-radius: 16px;
-          border: 1px solid #1a1a1a;
-          background: rgba(74, 74, 74, 0.39);
-          mix-blend-mode: luminosity;
-          box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.20);
-          backdrop-filter: blur(15px);
+          border: 1px solid rgba(0,0,0,0.1);
+          background: var(--menu-bg, rgba(255, 255, 255, 0.85));
+          box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.08);
+          backdrop-filter: blur(12px);
           width: 65px;
           height: 65px;
           display: flex;
           justify-content: center;
           align-items: center;
-          transition: opacity 0.3s ease;
         }
-        .hamburger-bg:hover {
-          opacity: 0.85;
-        }
-        .hamburger-icon {
+        .menu__icon {
           width: 32px;
           height: 32px;
           padding: 4px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          align-items: center;
         }
-        .hamburger-icon span {
+        .menu__icon span {
+          display: block;
           width: 100%;
           height: 0.125rem;
-          border-radius: 0.125rem;
-          background-color: rgb(0, 122, 255);
+          border-radius: 2px;
+          background-color: rgb(var(--color-primary-rgb, 0, 122, 255));
           box-shadow: 0 .5px 2px 0 hsla(0, 0%, 0%, .2);
-          transition: transform .4s, background-color .4s, opacity .4s;
+          transition: background-color .4s;
+          position: relative;
         }
-        .hamburger-icon.open span:nth-child(1) {
+        .menu__icon span+span {
+          margin-top: .375rem;
+        }
+        .menu__icon span:nth-child(1) {
+          animation: ease .8s menu-icon-top-2 forwards;
+        }
+        .menu__icon span:nth-child(2) {
+          animation: ease .8s menu-icon-scaled-2 forwards;
+        }
+        .menu__icon span:nth-child(3) {
+          animation: ease .8s menu-icon-bottom-2 forwards;
+        }
+        .menu__icon:hover span:nth-child(1) {
+          animation: ease .8s menu-icon-top forwards;
+        }
+        .menu__icon:hover span:nth-child(2) {
+          animation: ease .8s menu-icon-scaled forwards;
+        }
+        .menu__icon:hover span:nth-child(3) {
+          animation: ease .8s menu-icon-bottom forwards;
           background-color: rgb(255, 59, 48);
-          transform: translateY(11px) rotate(-45deg);
         }
-        .hamburger-icon.open span:nth-child(2) {
-          transform: translate(-50%);
-          opacity: 0;
+        @keyframes menu-icon-top {
+          0% { top: 0; transform: rotate(0); }
+          50% { top: .5rem; transform: rotate(0); }
+          100% { top: .5rem; transform: rotate(45deg); }
         }
-        .hamburger-icon.open span:nth-child(3) {
-          background-color: rgb(255, 59, 48);
-          transform: translateY(-11px) rotate(45deg);
+        @keyframes menu-icon-top-2 {
+          0% { top: .5rem; transform: rotate(45deg); }
+          50% { top: .5rem; transform: rotate(0); }
+          100% { top: 0; transform: rotate(0); }
+        }
+        @keyframes menu-icon-bottom {
+          0% { bottom: 0; transform: rotate(0); }
+          50% { bottom: .5rem; transform: rotate(0); }
+          100% { bottom: .5rem; transform: rotate(135deg); }
+        }
+        @keyframes menu-icon-bottom-2 {
+          0% { bottom: .5rem; transform: rotate(135deg); }
+          50% { bottom: .5rem; transform: rotate(0); }
+          100% { bottom: 0; transform: rotate(0); }
+        }
+        @keyframes menu-icon-scaled {
+          50% { transform: scale(0); }
+          100% { transform: scale(0); }
+        }
+        @keyframes menu-icon-scaled-2 {
+          0% { transform: scale(0); }
+          50% { transform: scale(0); }
+          100% { transform: scale(1); }
         }
 
         .drawer-overlay {
@@ -96,7 +127,7 @@ export function MenuDrawer({ children }: MenuDrawerProps) {
           overflow-y: auto;
           transform: translateX(-100%);
           transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-          color: #e2e8f0;
+          color: #ffffff;
         }
         .drawer-panel.open {
           transform: translateX(0);
@@ -124,25 +155,13 @@ export function MenuDrawer({ children }: MenuDrawerProps) {
         }
       `}} />
 
-      <LiquidGlass
-        style={{
-          borderRadius: "16px",
-          background: "rgba(0, 0, 0, 0.75)",
-          width: "65px",
-          height: "65px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <button className="hamburger-btn" onClick={() => setIsOpen(true)}>
-          <div className={"hamburger-icon" + (isOpen ? " open" : "")}>
-            <span />
-            <span />
-            <span />
-          </div>
+      <div className="menu-bg">
+        <button className="menu__icon" onClick={() => setIsOpen(true)}>
+          <span />
+          <span />
+          <span />
         </button>
-      </LiquidGlass>
+      </div>
 
       <div
         className={"drawer-overlay" + (isOpen ? " open" : "")}

@@ -23,7 +23,7 @@ export default function Home() {
         alignItems: "center",
         justifyContent: "center",
         padding: "2rem",
-        color: "#ffffff",
+        color: "var(--text-color, #ffffff)",
       }}
     >
       <div
@@ -39,7 +39,7 @@ export default function Home() {
           width="64"
           height="64"
           viewBox="0 0 24 24"
-          style={{ color: "#fff" }}
+          style={{ color: "var(--text-color, #fff)" }}
         >
           <path
             fill="currentColor"
@@ -86,7 +86,7 @@ export default function Home() {
             padding: "16px",
             borderRadius: "50px",
             border: "none",
-            background: "#0f3a73",
+            background: "var(--color-primary-dark, #0f3a73)",
             color: "#fff",
             fontSize: "1.1rem",
             fontWeight: 700,

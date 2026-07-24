@@ -2,7 +2,7 @@
  * TTS Service - browser + server fallbacks.
  *
  * Strategy (driven by localStorage "ttsProvider"):
- *   - "native": Web Speech API (window.speechSynthesis) -> Google Translate fallback.
+ *   - "native": Web Speech API (window.speechSynthesis).
  *   - "elevenlabs": Server-side /api/tts/elevenlabs proxy using ELEVENLABS_API_KEY.
  *
  * ElevenLabs requests fail silently to native on 4xx/5xx so the UI stays
@@ -94,57 +94,6 @@ function waitForVoices(): Promise<SpeechSynthesisVoice | null> {
 let voicePromise: Promise<SpeechSynthesisVoice | null> | null = null;
 if (typeof window !== "undefined") {
   voicePromise = waitForVoices();
-}
-
-/* ------------------------------------------------------------------ */
-/*  Online fallback (Google Translate public endpoint)                 */
-/* ------------------------------------------------------------------ */
-
-let fallbackAudio: HTMLAudioElement | null = null;
-
-function speakOnline(text: string): Promise<void> {
-  return new Promise((resolve) => {
-    console.log(`[TTS] Using online fallback for: "${text}"`);
-    try {
-      if (typeof window === "undefined") {
-        resolve();
-        return;
-      }
-
-      if (!fallbackAudio) {
-        fallbackAudio = new Audio();
-      } else {
-        // Pause any currently playing fallback audio
-        fallbackAudio.pause();
-      }
-
-      const encoded = encodeURIComponent(text.slice(0, 200));
-      fallbackAudio.src = `/api/tts?text=${encoded}`;
-      fallbackAudio.volume = 1.0;
-
-      const done = () => resolve();
-
-      fallbackAudio.onended = done;
-      fallbackAudio.onerror = (e) => {
-        console.error("[TTS] Online fallback audio error", e);
-        done();
-      };
-
-      const playPromise = fallbackAudio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          // Ignore AbortError which happens naturally when audio is paused/re-assigned quickly
-          if (err.name !== "AbortError") {
-            console.error("[TTS] Online fallback play() rejected", err);
-          }
-          done();
-        });
-      }
-    } catch (e) {
-      console.error("[TTS] Online fallback exception", e);
-      resolve();
-    }
-  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -324,17 +273,12 @@ export async function speak(text: string): Promise<void> {
     console.log("[TTS] ElevenLabs failed, falling back to native.");
   }
 
-  // Native path (or fallback)
   const voice = cachedVoice ?? (voicePromise ? await voicePromise : null);
   if (voice) {
-    const ok = await speakWithNativeAPI(text, voice);
-    if (ok) return;
-    console.log("[TTS] Native speech failed, falling back to online.");
+    await speakWithNativeAPI(text, voice);
   } else {
-    console.log("[TTS] No native voices available.");
+    console.warn("[TTS] No native voices available.");
   }
-
-  await speakOnline(text);
 }
 
 // Kept for backwards compatibility – now delegates to speak()

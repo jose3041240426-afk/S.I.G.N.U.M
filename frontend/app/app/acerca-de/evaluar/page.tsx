@@ -68,8 +68,8 @@ export default function EvaluarPage() {
   const radioSelected: React.CSSProperties = {
     display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px",
     borderRadius: "10px", cursor: "pointer", fontSize: "0.95rem", transition: "all 0.2s",
-    background: "rgba(59,130,246,0.15)",
-    borderWidth: "1px", borderStyle: "solid", borderColor: "#3b82f6",
+    background: "rgba(var(--color-primary-rgb, 59, 130, 246), 0.15)",
+    borderWidth: "1px", borderStyle: "solid", borderColor: "var(--color-primary, #3b82f6)",
   };
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "14px", borderRadius: "10px",
@@ -89,14 +89,14 @@ export default function EvaluarPage() {
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
           {/* Sección 1: Configuración de uso */}
           <div>
-            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 1rem", color: "#93c5fd" }}>Configuración de uso</h3>
+            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 1rem", color: "var(--text-color, #93c5fd)", opacity: 0.9 }}>Configuración de uso</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
               <div>
                 <label style={{ fontWeight: 600, fontSize: "0.95rem", display: "block", marginBottom: "8px" }}>¿Qué resolución tiene la cámara web que usaste?</label>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   {["Alta resolución (HD/Full HD)", "Resolución estándar", "No estoy seguro/a"].map((o) => (
                     <div key={o} style={form.resolucion === o ? radioSelected : radioStyle} onClick={() => update("resolucion", o)}>
-                      <input type="radio" name="resolucion" checked={form.resolucion === o} onChange={() => update("resolucion", o)} style={{ accentColor: "#3b82f6" }} />
+                      <input type="radio" name="resolucion" checked={form.resolucion === o} onChange={() => update("resolucion", o)} style={{ accentColor: "var(--color-primary, #3b82f6)" }} />
                       {o}
                     </div>
                   ))}
@@ -108,7 +108,7 @@ export default function EvaluarPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   {["Buena y constante", "Un poco oscura o con luz variable"].map((o) => (
                     <div key={o} style={form.iluminacion === o ? radioSelected : radioStyle} onClick={() => update("iluminacion", o)}>
-                      <input type="radio" name="iluminacion" checked={form.iluminacion === o} onChange={() => update("iluminacion", o)} style={{ accentColor: "#3b82f6" }} />
+                      <input type="radio" name="iluminacion" checked={form.iluminacion === o} onChange={() => update("iluminacion", o)} style={{ accentColor: "var(--color-primary, #3b82f6)" }} />
                       {o}
                     </div>
                   ))}
@@ -120,7 +120,7 @@ export default function EvaluarPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   {["Muy cerca (menos de 50 cm)", "A una distancia cómoda (50 cm a 1 metro)", "Lejos (más de 1 metro)"].map((o) => (
                     <div key={o} style={form.distancia === o ? radioSelected : radioStyle} onClick={() => update("distancia", o)}>
-                      <input type="radio" name="distancia" checked={form.distancia === o} onChange={() => update("distancia", o)} style={{ accentColor: "#3b82f6" }} />
+                      <input type="radio" name="distancia" checked={form.distancia === o} onChange={() => update("distancia", o)} style={{ accentColor: "var(--color-primary, #3b82f6)" }} />
                       {o}
                     </div>
                   ))}
@@ -132,7 +132,7 @@ export default function EvaluarPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   {["Laptop", "PC de escritorio", "Tablet", "Celular"].map((o) => (
                     <div key={o} style={form.dispositivo === o ? radioSelected : radioStyle} onClick={() => update("dispositivo", o)}>
-                      <input type="radio" name="dispositivo" checked={form.dispositivo === o} onChange={() => update("dispositivo", o)} style={{ accentColor: "#3b82f6" }} />
+                      <input type="radio" name="dispositivo" checked={form.dispositivo === o} onChange={() => update("dispositivo", o)} style={{ accentColor: "var(--color-primary, #3b82f6)" }} />
                       {o}
                     </div>
                   ))}
@@ -144,7 +144,7 @@ export default function EvaluarPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   {["Google Chrome", "Firefox", "Microsoft Edge", "Safari", "Otro"].map((o) => (
                     <div key={o} style={form.navegador === o ? radioSelected : radioStyle} onClick={() => update("navegador", o)}>
-                      <input type="radio" name="navegador" checked={form.navegador === o} onChange={() => update("navegador", o)} style={{ accentColor: "#3b82f6" }} />
+                      <input type="radio" name="navegador" checked={form.navegador === o} onChange={() => update("navegador", o)} style={{ accentColor: "var(--color-primary, #3b82f6)" }} />
                       {o}
                     </div>
                   ))}
@@ -156,7 +156,7 @@ export default function EvaluarPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   {["Sí", "No"].map((o) => (
                     <div key={o} style={form.experiencia_previa === o ? radioSelected : radioStyle} onClick={() => update("experiencia_previa", o)}>
-                      <input type="radio" name="experiencia_previa" checked={form.experiencia_previa === o} onChange={() => update("experiencia_previa", o)} style={{ accentColor: "#3b82f6" }} />
+                      <input type="radio" name="experiencia_previa" checked={form.experiencia_previa === o} onChange={() => update("experiencia_previa", o)} style={{ accentColor: "var(--color-primary, #3b82f6)" }} />
                       {o}
                     </div>
                   ))}
@@ -167,7 +167,7 @@ export default function EvaluarPage() {
 
           {/* Sección 2: Experiencia de uso */}
           <div>
-            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 0.5rem", color: "#93c5fd" }}>Experiencia de uso</h3>
+            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 0.5rem", color: "var(--text-color, #93c5fd)", opacity: 0.9 }}>Experiencia de uso</h3>
             <p style={{ fontSize: "0.85rem", opacity: 0.7, fontStyle: "italic", marginBottom: "1rem" }}>1 = Totalmente en desacuerdo · 5 = Totalmente de acuerdo</p>
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               {[
@@ -187,8 +187,8 @@ export default function EvaluarPage() {
                       <button key={n} type="button" onClick={() => update(q.field, n)}
                         style={{
                           width: "44px", height: "44px", borderRadius: "10px",
-                          border: form[q.field as keyof typeof form] === n ? "2px solid #3b82f6" : "1px solid rgba(255,255,255,0.2)",
-                          background: form[q.field as keyof typeof form] === n ? "rgba(59,130,246,0.2)" : "rgba(255,255,255,0.05)",
+                          border: form[q.field as keyof typeof form] === n ? "2px solid var(--color-primary, #3b82f6)" : "1px solid rgba(255,255,255,0.2)",
+                          background: form[q.field as keyof typeof form] === n ? "rgba(var(--color-primary-rgb, 59, 130, 246), 0.2)" : "rgba(255,255,255,0.05)",
                           color: "#fff", fontSize: "1.1rem", fontWeight: 700, cursor: "pointer",
                         }}
                       >{n}</button>
@@ -201,7 +201,7 @@ export default function EvaluarPage() {
 
           {/* Sección 3: Satisfacción */}
           <div>
-            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 1rem", color: "#93c5fd" }}>Satisfacción</h3>
+            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 1rem", color: "var(--text-color, #93c5fd)", opacity: 0.9 }}>Satisfacción</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
               <div>
                 <label style={{ fontWeight: 600, fontSize: "0.95rem", display: "block", marginBottom: "6px" }}>¿Qué tan satisfecho/a quedaste con la voz que genera el sistema al interpretar tus señas?</label>
@@ -248,7 +248,7 @@ export default function EvaluarPage() {
 
           {/* Sección 4: Comentarios */}
           <div>
-            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 1rem", color: "#93c5fd" }}>Comentarios</h3>
+            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 1rem", color: "var(--text-color, #93c5fd)", opacity: 0.9 }}>Comentarios</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
                 <label style={{ fontWeight: 600, fontSize: "0.95rem", display: "block", marginBottom: "6px" }}>¿Qué función te pareció más útil?</label>
@@ -282,7 +282,7 @@ export default function EvaluarPage() {
           <button type="submit" disabled={submitting}
             style={{
               width: "100%", padding: "16px", borderRadius: "50px", border: "none",
-              background: submitting ? "rgba(15,58,115,0.5)" : "#0f3a73",
+              background: submitting ? "rgba(var(--color-primary-rgb, 15, 58, 115), 0.5)" : "var(--color-primary-dark, #0f3a73)",
               color: "#fff", fontSize: "1.1rem", fontWeight: 700,
               cursor: submitting ? "not-allowed" : "pointer", marginTop: "0.5rem",
             }}

@@ -1,3 +1,19 @@
+function getPointsColor(): string {
+  if (typeof window === "undefined") return "#3b82f6";
+  const fromLS = localStorage.getItem("pointsColor");
+  if (fromLS) return fromLS;
+  return "#3b82f6";
+}
+
+function getPointsTextColor(): string {
+  const hex = getPointsColor().replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  const l = 0.299 * r + 0.587 * g + 0.114 * b;
+  return l > 0.5 ? "#000000" : "#ffffff";
+}
+
 export interface MediaPipeDetectionResult {
   handDetected: boolean;
   landmarks: number[];
@@ -69,7 +85,14 @@ export async function initMediaPipe(
   // Render loop: 60fps video + hand overlay, detection runs synchronously
   let lastDetectTime = 0;
   let cachedResults: any = null;
-  const DETECT_INTERVAL = 60; // detect every ~60ms (~16fps AI, plenty fast)
+
+  const getDetectInterval = (): number => {
+    if (typeof window !== "undefined") {
+      const v = localStorage.getItem("captureSpeed");
+      return v ? parseInt(v, 10) : 60;
+    }
+    return 60;
+  };
 
   const renderLoop = () => {
     if (!isRunning) return;
@@ -96,7 +119,7 @@ export async function initMediaPipe(
 
     // 2) Run hand detection at throttled rate
     const now = performance.now();
-    if (handLandmarkerInstance && now - lastDetectTime >= DETECT_INTERVAL) {
+    if (handLandmarkerInstance && now - lastDetectTime >= getDetectInterval()) {
       try {
         cachedResults = handLandmarkerInstance.detectForVideo(videoElement, now);
       } catch {}
@@ -116,7 +139,7 @@ export async function initMediaPipe(
         const isRightHand = handedness?.categoryName === "Right";
         // Since we mirror the canvas, person's right hand appears on right side
         const label = isRightHand ? "Derecha" : "Izquierda";
-        const color = isRightHand ? "#4ade80" : "#60a5fa";
+        const color = isRightHand ? "#4ade80" : getPointsColor();
 
         drawHand(ctx, lms, label, color, canvasElement.width, canvasElement.height);
       }
@@ -193,7 +216,7 @@ function drawHand(
   for (const pt of pts) {
     ctx.beginPath();
     ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
-    ctx.fillStyle = "#3B82F6";
+    ctx.fillStyle = getPointsColor();
     ctx.fill();
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 1;
@@ -227,7 +250,7 @@ function drawHand(
   ctx.roundRect(pillX, pillY, textW + 16, 24, 6);
   ctx.fill();
 
-  ctx.fillStyle = "#000";
+  ctx.fillStyle = getPointsTextColor();
   ctx.fillText(label, pillX + 8, pillY + 17);
 }
 

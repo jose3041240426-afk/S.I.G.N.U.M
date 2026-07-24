@@ -26,6 +26,7 @@ export function LiquidGlass({
           z-index: 0;
           border-radius: 24px;
           overflow: hidden;
+          pointer-events: none;
           backdrop-filter: blur(8px) saturate(180%);
           filter: url(#glass-blur);
           background: rgba(255, 255, 255, var(--glass-opacity, 0.4));

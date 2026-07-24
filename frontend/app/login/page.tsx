@@ -48,7 +48,7 @@ export default function LoginPage() {
         alignItems: "center",
         justifyContent: "center",
         padding: "2rem",
-        color: "#fff",
+        color: "var(--text-color, #fff)",
       }}
     >
       <div
@@ -146,7 +146,7 @@ export default function LoginPage() {
               padding: "14px",
               borderRadius: "50px",
               border: "none",
-              background: loading ? "rgba(15,58,115,0.5)" : "#0f3a73",
+              background: loading ? "rgba(var(--color-primary-rgb, 15, 58, 115), 0.5)" : "var(--color-primary-dark, #0f3a73)",
               color: "#fff",
               fontSize: "1rem",
               fontWeight: 700,
@@ -162,7 +162,7 @@ export default function LoginPage() {
           ¿No tienes cuenta?{" "}
           <a
             href="/register"
-            style={{ color: "#60a5fa", textDecoration: "none", fontWeight: 600 }}
+            style={{ color: "var(--color-primary-light, #60a5fa)", textDecoration: "none", fontWeight: 600 }}
           >
             Registrarse
           </a>
@@ -171,8 +171,8 @@ export default function LoginPage() {
         <div style={{ textAlign: "center", marginTop: "1rem" }}>
           <a
             href="/"
-            style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none", fontSize: "0.85rem" }}
-          >
+            style={{ color: "var(--text-color, rgba(255,255,255,0.5))", textDecoration: "none", fontSize: "0.85rem", opacity: 0.6 }}
+            >
             ← Volver
           </a>
         </div>

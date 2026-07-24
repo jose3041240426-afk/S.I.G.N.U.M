@@ -10,7 +10,7 @@ const Checkbox: React.FC<CheckboxProps> = ({ checked, onChange }) => {
     <>
       <style dangerouslySetInnerHTML={{ __html: `
         .cbx-wrapper {
-          --accent-color: #3b82f6;
+          --accent-color: var(--color-primary, #3b82f6);
           display: inline-flex;
           align-items: center;
         }
@@ -33,7 +33,7 @@ const Checkbox: React.FC<CheckboxProps> = ({ checked, onChange }) => {
           width: 48px;
           height: 48px;
           border-radius: 50%;
-          background: rgba(59, 130, 246, 0.08);
+          background: rgba(var(--color-primary-rgb, 59, 130, 246), 0.08);
           opacity: 0;
           transition: opacity 0.2s ease;
         }
@@ -65,11 +65,11 @@ const Checkbox: React.FC<CheckboxProps> = ({ checked, onChange }) => {
         }
 
         .cbx-wrapper .check:hover svg {
-          stroke: var(--accent-color, #3b82f6);
+          stroke: var(--accent-color, var(--color-primary, #3b82f6));
         }
 
         .cbx-wrapper input:checked + .check svg {
-          stroke: var(--accent-color, #3b82f6);
+          stroke: var(--accent-color, var(--color-primary, #3b82f6));
         }
 
         .cbx-wrapper input:checked + .check svg path {

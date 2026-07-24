@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { LiquidGlass } from "@/components/ui/LiquidGlass";
 import { ELEVENLABS_VOICES } from "@/services/tts.service";
+import { db } from "@/lib/db";
 
 export default function AjustesPage() {
   const [isMirrored, setIsMirrored] = useState(true);
@@ -16,6 +17,11 @@ export default function AjustesPage() {
   const [voiceListVisible, setVoiceListVisible] = useState(false);
   const [voiceListAnimation, setVoiceListAnimation] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
+  const [fontScale, setFontScale] = useState(1);
+  const [primaryColor, setPrimaryColor] = useState("#3b82f6");
+  const [pointsColor, setPointsColor] = useState("#3b82f6");
+  const [confirmAction, setConfirmAction] = useState<string | null>(null);
+  const [captureSpeed, setCaptureSpeed] = useState(60);
 
   // Load settings on mount
   useEffect(() => {
@@ -52,6 +58,18 @@ export default function AjustesPage() {
 
       const savedVoiceId = localStorage.getItem("elevenlabsVoiceId");
       if (savedVoiceId) setElevenlabsVoiceId(savedVoiceId);
+
+      const savedFontScale = localStorage.getItem("fontScale");
+      if (savedFontScale) setFontScale(parseFloat(savedFontScale));
+
+      const savedColor = localStorage.getItem("primaryColor");
+      if (savedColor) setPrimaryColor(savedColor);
+
+      const savedPointsColor = localStorage.getItem("pointsColor");
+      if (savedPointsColor) setPointsColor(savedPointsColor);
+
+      const savedSpeed = localStorage.getItem("captureSpeed");
+      if (savedSpeed) setCaptureSpeed(parseInt(savedSpeed, 10));
     }
   }, []);
 
@@ -66,14 +84,72 @@ export default function AjustesPage() {
       localStorage.setItem("glassBorder", String(glassBorder));
       localStorage.setItem("ttsProvider", ttsProvider);
       localStorage.setItem("elevenlabsVoiceId", elevenlabsVoiceId);
+      localStorage.setItem("fontScale", String(fontScale));
+      localStorage.setItem("primaryColor", primaryColor);
+      localStorage.setItem("pointsColor", pointsColor);
+      localStorage.setItem("captureSpeed", String(captureSpeed));
 
       // Disparar evento para actualizar layout.tsx de inmediato en la misma pestaña
       window.dispatchEvent(new Event("glassOpacityChange"));
       window.dispatchEvent(new Event("glassBorderChange"));
+      window.dispatchEvent(new Event("fontScaleChange"));
+      window.dispatchEvent(new Event("primaryColorChange"));
       
       setSavedMessage("¡Configuración guardada correctamente!");
       setTimeout(() => setSavedMessage(""), 3000);
     }
+  };
+
+  const handleClearCache = async () => {
+    try {
+      await db.clearAll();
+      const keys = [
+        "isCameraMirrored", "soundOnSeña", "autoAddActive", "preventRepeat",
+        "autoAddConfidence", "autoAddStableFrames", "ttsRate", "ttsPitch",
+        "glassOpacity", "glassBorder", "ttsProvider", "elevenlabsVoiceId",
+        "fontScale", "primaryColor", "pointsColor", "captureSpeed",
+      ];
+      keys.forEach((k) => localStorage.removeItem(k));
+      setIsMirrored(true);
+      setAutoAddConfidence(55);
+      setAutoAddStableFrames(6);
+      setTtsRate(0.95);
+      setTtsPitch(1.0);
+      setGlassOpacity(0.05);
+      setGlassBorder(0);
+      setTtsProvider("native");
+      setElevenlabsVoiceId("pNInz6obpgDQGcFmaJgB");
+      setFontScale(1);
+      setPrimaryColor("#3b82f6");
+      setPointsColor("#3b82f6");
+      setCaptureSpeed(60);
+      window.dispatchEvent(new Event("glassOpacityChange"));
+      window.dispatchEvent(new Event("glassBorderChange"));
+      window.dispatchEvent(new Event("fontScaleChange"));
+      window.dispatchEvent(new Event("primaryColorChange"));
+      setSavedMessage("Caché limpiado y configuración restablecida");
+      setTimeout(() => setSavedMessage(""), 3000);
+    } catch {
+      setSavedMessage("Error al limpiar la caché");
+      setTimeout(() => setSavedMessage(""), 3000);
+    }
+    setConfirmAction(null);
+  };
+
+  const handleResetLetters = async () => {
+    try {
+      await db.clearSamples();
+      await db.deleteModel("rf-letter");
+      await db.deleteModel("rf-word");
+      await db.deleteModel("rf-dynamic");
+      window.dispatchEvent(new Event("modelReset"));
+      setSavedMessage("Modelo vaciado completamente");
+      setTimeout(() => setSavedMessage(""), 3000);
+    } catch {
+      setSavedMessage("Error al vaciar el modelo");
+      setTimeout(() => setSavedMessage(""), 3000);
+    }
+    setConfirmAction(null);
   };
 
   const handleReset = () => {
@@ -99,10 +175,16 @@ export default function AjustesPage() {
       localStorage.removeItem("glassBorder");
       localStorage.removeItem("ttsProvider");
       localStorage.removeItem("elevenlabsVoiceId");
+      localStorage.removeItem("fontScale");
+      localStorage.removeItem("primaryColor");
+      localStorage.removeItem("pointsColor");
+      localStorage.removeItem("captureSpeed");
 
       // Disparar evento para actualizar layout.tsx de inmediato en la misma pestaña
       window.dispatchEvent(new Event("glassOpacityChange"));
       window.dispatchEvent(new Event("glassBorderChange"));
+      window.dispatchEvent(new Event("fontScaleChange"));
+      window.dispatchEvent(new Event("primaryColorChange"));
       
       setSavedMessage("Configuración restablecida a valores por defecto");
       setTimeout(() => setSavedMessage(""), 3000);
@@ -116,13 +198,85 @@ export default function AjustesPage() {
           0% { opacity: 0; transform: translateY(-8px) scale(0.98); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
+        .save-btn {
+          cursor: pointer;
+          position: relative;
+          padding: 14px 28px;
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: var(--color-primary-text, #ffffff);
+          border: 2px solid var(--color-primary, #3b82f6);
+          border-radius: 50px;
+          background-color: transparent;
+          transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+          overflow: hidden;
+          z-index: 0;
+        }
+        .save-btn::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          margin: auto;
+          width: 200px;
+          height: 200px;
+          border-radius: inherit;
+          scale: 0;
+          z-index: -1;
+          background-color: var(--color-primary, #3b82f6);
+          transition: all 1.5s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+        .save-btn:hover::before {
+          scale: 3;
+        }
+        .save-btn:hover {
+          color: var(--color-primary-text, #ffffff);
+          box-shadow: 0 0px 20px rgba(var(--color-primary-rgb, 59, 130, 246), 0.4);
+        }
+        .reset-btn {
+          cursor: pointer;
+          position: relative;
+          padding: 10px 20px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: #fca5a5;
+          border: 2px solid #ef4444;
+          border-radius: 50px;
+          background-color: transparent;
+          transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+          overflow: hidden;
+          z-index: 0;
+        }
+        .reset-btn::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          margin: auto;
+          width: 50px;
+          height: 50px;
+          border-radius: inherit;
+          scale: 0;
+          z-index: -1;
+          background-color: #ef4444;
+          transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+        .reset-btn:hover::before {
+          scale: 3;
+        }
+        .reset-btn:hover {
+          color: var(--color-primary-text, #ffffff);
+          scale: 1.1;
+          box-shadow: 0 0px 20px rgba(239, 68, 68, 0.4);
+        }
+        .reset-btn:active {
+          scale: 1;
+        }
       `}</style>
     <div className="stagger" style={{ maxWidth: "650px", width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       <div>
-        <h2 style={{ fontSize: "2rem", fontWeight: 800, margin: 0, color: "#ffffff" }}>
+        <h2 style={{ fontSize: "2rem", fontWeight: 800, margin: 0, color: "var(--text-color, #ffffff)" }}>
           Ajustes
         </h2>
-        <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.8)", marginTop: "4px" }}>
+        <p style={{ fontSize: "0.9rem", color: "var(--text-color, rgba(255,255,255,0.8))", opacity: 0.85, marginTop: "4px" }}>
           Personaliza tu experiencia de traducción y voz en Signum
         </p>
       </div>
@@ -145,6 +299,21 @@ export default function AjustesPage() {
               onChange={(e) => setIsMirrored(e.target.checked)}
               style={{ width: "20px", height: "20px", cursor: "pointer" }}
             />
+          </div>
+          <div style={{ marginTop: "1.2rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+              <span style={{ fontSize: "0.95rem", fontWeight: 600 }}>Velocidad de Captura: {captureSpeed}ms</span>
+              <span style={{ fontSize: "0.8rem", opacity: 0.7 }}>Por defecto: 60ms (~16fps)</span>
+            </div>
+            <input 
+              type="range" 
+              className="custom-slider"
+              min="20" 
+              max="200" 
+              value={captureSpeed}
+              onChange={(e) => setCaptureSpeed(parseInt(e.target.value, 10))}
+            />
+            <p style={{ margin: "4px 0 0 0", fontSize: "0.75rem", opacity: 0.6 }}>Intervalo entre detecciones (menor = más rápido, mayor = menos CPU).</p>
           </div>
         </div>
 
@@ -358,6 +527,101 @@ export default function AjustesPage() {
           </div>
         </div>
 
+        {/* Sección Apariencia - Tamaño de fuente */}
+        <div>
+          <h3 style={{ fontSize: "1.2rem", fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "8px", marginBottom: "1.2rem" }}>
+            Personalización Visual
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                <span style={{ fontSize: "0.95rem", fontWeight: 600 }}>Tamaño de fuente: {Math.round(fontScale * 100)}%</span>
+                <span style={{ fontSize: "0.8rem", opacity: 0.7 }}>Por defecto: 100%</span>
+              </div>
+              <input
+                type="range"
+                className="custom-slider"
+                min="0.7"
+                max="1.5"
+                step="0.05"
+                value={fontScale}
+                onChange={(e) => setFontScale(parseFloat(e.target.value))}
+              />
+              <p style={{ margin: "4px 0 0 0", fontSize: "0.75rem", opacity: 0.6 }}>Escala todo el texto de la interfaz.</p>
+            </div>
+
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                <span style={{ fontSize: "0.95rem", fontWeight: 600 }}>Color principal</span>
+                <span style={{ fontSize: "0.8rem", opacity: 0.7 }}>Actual: {primaryColor}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <input
+                  type="color"
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  style={{ width: "48px", height: "48px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer", background: "none" }}
+                />
+              </div>
+              <p style={{ margin: "4px 0 0 0", fontSize: "0.75rem", opacity: 0.6 }}>Cambia el color de acento de la aplicación.</p>
+            </div>
+
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                <span style={{ fontSize: "0.95rem", fontWeight: 600 }}>Color de puntos</span>
+                <span style={{ fontSize: "0.8rem", opacity: 0.7 }}>Actual: {pointsColor}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <input
+                  type="color"
+                  value={pointsColor}
+                  onChange={(e) => setPointsColor(e.target.value)}
+                  style={{ width: "48px", height: "48px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer", background: "none" }}
+                />
+              </div>
+              <p style={{ margin: "4px 0 0 0", fontSize: "0.75rem", opacity: 0.6 }}>Color de los puntos de referencia de la mano en la cámara.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Sección Mantenimiento */}
+        <div>
+          <h3 style={{ fontSize: "1.2rem", fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "8px", marginBottom: "1.2rem" }}>
+            Mantenimiento
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem" }}>Vaciar modelo</p>
+                <p style={{ margin: "2px 0 0 0", fontSize: "0.8rem", opacity: 0.7 }}>Elimina todas las letras, palabras y señas registradas</p>
+              </div>
+              {confirmAction === "resetLetters" ? (
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button onClick={() => setConfirmAction(null)} className="reset-btn" style={{ padding: "6px 14px", fontSize: "0.8rem" }}>Cancelar</button>
+                  <button onClick={handleResetLetters} className="save-btn" style={{ padding: "6px 14px", fontSize: "0.8rem", color: "#fca5a5", border: "2px solid #ef4444" }}>Confirmar</button>
+                </div>
+              ) : (
+                <button onClick={() => setConfirmAction("resetLetters")} className="reset-btn">Vaciar</button>
+              )}
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem" }}>Limpiar caché</p>
+                <p style={{ margin: "2px 0 0 0", fontSize: "0.8rem", opacity: 0.7 }}>Borra todos los datos guardados y restablece ajustes</p>
+              </div>
+              {confirmAction === "clearCache" ? (
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button onClick={() => setConfirmAction(null)} className="reset-btn" style={{ padding: "6px 14px", fontSize: "0.8rem" }}>Cancelar</button>
+                  <button onClick={handleClearCache} className="save-btn" style={{ padding: "6px 14px", fontSize: "0.8rem", color: "#fca5a5", border: "2px solid #ef4444" }}>Confirmar</button>
+                </div>
+              ) : (
+                <button onClick={() => setConfirmAction("clearCache")} className="reset-btn">Limpiar</button>
+              )}
+            </div>
+          </div>
+        </div>
+
         {savedMessage && (
           <div
             style={{
@@ -380,32 +644,13 @@ export default function AjustesPage() {
         <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end", marginTop: "1rem" }}>
           <button
             onClick={handleReset}
-            style={{
-              padding: "10px 20px",
-              borderRadius: "50px",
-              border: "1px solid rgba(255,255,255,0.3)",
-              background: "transparent",
-              color: "#fff",
-              fontWeight: 600,
-              cursor: "pointer",
-              fontSize: "0.9rem"
-            }}
+            className="reset-btn"
           >
             Restablecer
           </button>
           <button
             onClick={handleSave}
-            style={{
-              padding: "10px 24px",
-              borderRadius: "50px",
-              border: "none",
-              background: "#0f3a73",
-              color: "#fff",
-              fontWeight: 700,
-              cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(15, 58, 115, 0.3)",
-              fontSize: "0.9rem"
-            }}
+            className="save-btn"
           >
             Guardar Cambios
           </button>

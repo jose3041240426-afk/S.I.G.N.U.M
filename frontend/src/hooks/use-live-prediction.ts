@@ -161,27 +161,6 @@ export function useLivePrediction(
       console.warn(`[Prediction] Error loading dynamic model from DB:`, err);
     }
 
-    if (!letterReady) {
-      try {
-        await rfLetter.current.load("/models/modelo_letras.json");
-        letterReady = true;
-      } catch {}
-    }
-
-    if (!wordReady) {
-      try {
-        await rfWord.current.load("/models/modelo_palabras.json");
-        wordReady = true;
-      } catch {}
-    }
-
-    if (!dynamicReady) {
-      try {
-        await rfDynamic.current.load("/models/modelo_dinamico.json");
-        dynamicReady = true;
-      } catch {}
-    }
-
     return letterReady || wordReady || dynamicReady;
   }
 

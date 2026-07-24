@@ -6,6 +6,20 @@ import { MenuDrawer } from "@/components/ui/MenuDrawer";
 import { FlipButton } from "@/components/ui/FlipButton";
 import { NavButton } from "@/components/ui/NavButton";
 
+function hexToRgb(hex: string): string {
+  const h = hex.replace("#", "");
+  return `${parseInt(h.substring(0, 2), 16)}, ${parseInt(h.substring(2, 4), 16)}, ${parseInt(h.substring(4, 6), 16)}`;
+}
+
+function contrastText(hex: string): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16) / 255;
+  const g = parseInt(h.substring(2, 4), 16) / 255;
+  const b = parseInt(h.substring(4, 6), 16) / 255;
+  const l = 0.299 * r + 0.587 * g + 0.114 * b;
+  return l > 0.5 ? "#000000" : "#ffffff";
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -14,6 +28,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [glassOpacity, setGlassOpacity] = useState(0.05);
   const [glassBorder, setGlassBorder] = useState(0);
   const [animateText, setAnimateText] = useState(true);
+  const [fontScale, setFontScale] = useState(1);
+  const [primaryColor, setPrimaryColor] = useState("#3b82f6");
+  const [pointsColor, setPointsColor] = useState("#3b82f6");
 
   useEffect(() => {
     getCurrentUser().then(setCurrentUser).catch(console.error);
@@ -30,6 +47,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       if (savedBorder !== null) {
         setGlassBorder(parseInt(savedBorder, 10));
       }
+
+      const savedFontScale = localStorage.getItem("fontScale");
+      if (savedFontScale !== null) {
+        setFontScale(parseFloat(savedFontScale));
+      }
+
+      const savedColor = localStorage.getItem("primaryColor");
+      if (savedColor !== null) {
+        setPrimaryColor(savedColor);
+      }
+
+      const savedPointsColor = localStorage.getItem("pointsColor");
+      if (savedPointsColor !== null) {
+        setPointsColor(savedPointsColor);
+      }
     }
 
     const handleStorageChange = () => {
@@ -41,15 +73,31 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       if (savedBorder !== null) {
         setGlassBorder(parseInt(savedBorder, 10));
       }
+      const savedFontScale = localStorage.getItem("fontScale");
+      if (savedFontScale !== null) {
+        setFontScale(parseFloat(savedFontScale));
+      }
+      const savedColor = localStorage.getItem("primaryColor");
+      if (savedColor !== null) {
+        setPrimaryColor(savedColor);
+      }
+      const savedPointsColor = localStorage.getItem("pointsColor");
+      if (savedPointsColor !== null) {
+        setPointsColor(savedPointsColor);
+      }
     };
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("glassOpacityChange", handleStorageChange as EventListener);
     window.addEventListener("glassBorderChange", handleStorageChange as EventListener);
+    window.addEventListener("fontScaleChange", handleStorageChange as EventListener);
+    window.addEventListener("primaryColorChange", handleStorageChange as EventListener);
     
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("glassOpacityChange", handleStorageChange as EventListener);
       window.removeEventListener("glassBorderChange", handleStorageChange as EventListener);
+      window.removeEventListener("fontScaleChange", handleStorageChange as EventListener);
+      window.removeEventListener("primaryColorChange", handleStorageChange as EventListener);
     };
   }, []);
 
@@ -107,8 +155,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         :root {
           --glass-opacity: ${glassOpacity};
           --glass-border: ${glassBorder}px solid rgba(255, 255, 255, 0.3);
-          --text-color: ${glassOpacity < 0.4 ? "#ffffff" : "#000000"};
-          --text-shadow: ${glassOpacity < 0.4 ? "0 1px 3px rgba(0,0,0,0.6)" : "none"};
+          --text-color: ${(glassOpacity < 0.4 && contrastText(primaryColor) === "#ffffff") ? "#ffffff" : "#000000"};
+          --text-shadow: ${(glassOpacity < 0.4 && contrastText(primaryColor) === "#ffffff") ? "0 1px 3px rgba(0,0,0,0.6)" : "none"};
+          --font-scale: ${fontScale};
+          --color-primary: ${primaryColor};
+          --color-primary-rgb: ${hexToRgb(primaryColor)};
+          --color-primary-dark: ${primaryColor};
+          --color-primary-light: ${primaryColor}aa;
+          --color-primary-text: ${contrastText(primaryColor)};
+          --color-points: ${pointsColor};
+          --color-points-rgb: ${hexToRgb(pointsColor)};
+          --color-points-text: ${contrastText(pointsColor)};
+        }
+        body, .app-content {
+          font-size: calc(100% * var(--font-scale, 1));
+        }
+        body {
+          background: linear-gradient(135deg, color-mix(in srgb, rgb(var(--color-primary-rgb, 10, 22, 40)) 15%, #000 85%) 0%, color-mix(in srgb, rgb(var(--color-primary-rgb, 15, 43, 74)) 35%, #000 65%) 25%, rgb(var(--color-primary-rgb, 26, 74, 122)) 50%, color-mix(in srgb, rgb(var(--color-primary-rgb, 15, 43, 74)) 35%, #000 65%) 75%, color-mix(in srgb, rgb(var(--color-primary-rgb, 10, 22, 40)) 15%, #000 85%) 100%);
         }
         p, h1, h2, h3, h4, h5, h6, span, label, td, th, li, option {
           transition: color 0.3s ease;
@@ -137,7 +200,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </MenuDrawer>
       </div>
       <div
-        className="stagger"
+        className="stagger app-content"
         style={{
           minHeight: "100vh",
           background: "transparent",
@@ -146,7 +209,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           alignItems: "center",
           padding: "2rem",
           fontFamily: "'Segoe UI', Roboto, system-ui, sans-serif",
-          color: "#ffffff",
+          color: "var(--text-color, #ffffff)",
         }}
       >
         <header
@@ -171,7 +234,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 width="48"
                 height="48"
                 viewBox="0 0 24 24"
-                style={{ color: "#fff" }}
+                style={{ color: "var(--text-color, #fff)" }}
               >
                 <path
                   fill="currentColor"
@@ -182,7 +245,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 width="280"
                 height="56"
                 viewBox="0 0 280 56"
-                style={{ color: "#fff", overflow: "visible" }}
+                style={{ color: "var(--text-color, #fff)", overflow: "visible" }}
               >
                 <text
                   x="0"

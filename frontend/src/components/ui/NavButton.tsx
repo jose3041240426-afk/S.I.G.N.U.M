@@ -13,8 +13,7 @@ export function NavButton({ children, onClick, icon }: { children: React.ReactNo
           border-radius: 0.8em;
           cursor: pointer;
           border: none;
-          background: linear-gradient(to right, #0f3a73, #2563eb);
-          color: ghostwhite;
+          background: #ffffff;
           overflow: hidden;
           width: 100%;
         }
@@ -31,6 +30,7 @@ export function NavButton({ children, onClick, icon }: { children: React.ReactNo
           align-items: center;
           padding: 0.8em 1.2em 0.8em 1.05em;
           justify-content: center;
+          color: #000000;
         }
         .nav-btn::before {
           content: "";
@@ -40,12 +40,15 @@ export function NavButton({ children, onClick, icon }: { children: React.ReactNo
           width: 120%;
           height: 100%;
           z-index: 0;
-          background: #000;
-          transform: skew(30deg);
-          transition: transform 0.4s cubic-bezier(0.3, 1, 0.8, 1);
+          background: linear-gradient(to right, color-mix(in srgb, rgb(var(--color-primary-rgb, 15, 58, 115)), #000 25%), color-mix(in srgb, rgb(var(--color-primary-rgb, 37, 99, 235)), #000 25%));
+          transform: translateX(-100%);
+          transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
         }
         .nav-btn:hover::before {
-          transform: translate3d(100%, 0, 0);
+          transform: translateX(0);
+        }
+        .nav-btn:hover span {
+          color: var(--color-primary-text, #000000);
         }
         .nav-btn:active {
           transform: scale(0.95);

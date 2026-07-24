@@ -85,7 +85,7 @@ export function StatsScreen({ userId }: StatsScreenProps) {
               padding: "12px 28px",
               borderRadius: "50px",
               border: "none",
-              background: "#0f3a73",
+              background: "var(--color-primary-dark, #0f3a73)",
               color: "#fff",
               fontWeight: 700,
               cursor: "pointer",
@@ -115,10 +115,10 @@ export function StatsScreen({ userId }: StatsScreenProps) {
     <div className="stagger" style={{ maxWidth: "1100px", width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: "2rem" }}>
       {/* Top Section / Header */}
       <div>
-        <h2 style={{ fontSize: "2rem", fontWeight: 800, margin: 0, color: "#ffffff" }}>
+        <h2 style={{ fontSize: "2rem", fontWeight: 800, margin: 0, color: "var(--text-color, #ffffff)" }}>
           Mis Estadísticas
         </h2>
-          <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.8)", marginTop: "4px" }}>
+          <p style={{ fontSize: "0.9rem", color: "var(--text-color, rgba(255,255,255,0.8))", opacity: 0.85, marginTop: "4px" }}>
           Monitorea tus traducciones y uso general de la plataforma
         </p>
       </div>
@@ -136,8 +136,8 @@ export function StatsScreen({ userId }: StatsScreenProps) {
           id: "traducciones",
           content: (
             <LiquidGlass style={{ padding: "1.5rem 2rem", display: "flex", alignItems: "center", gap: "1.5rem" }}>
-              <div style={{ background: "linear-gradient(135deg, #1e3a8a, #3b82f6)", borderRadius: "16px", padding: "14px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div style={{ background: "linear-gradient(135deg, rgb(var(--color-primary-rgb, 30, 58, 138)), rgb(var(--color-primary-rgb, 59, 130, 246)))", borderRadius: "16px", padding: "14px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-text, #fff)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </div>

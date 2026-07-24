@@ -1,9 +1,10 @@
 const DB_NAME = "signum";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 const STORES = {
   samples: "samples",
   models: "models",
+  aiCache: "aiCache",
 } as const;
 
 function openDB(): Promise<IDBDatabase> {
@@ -21,6 +22,10 @@ function openDB(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(STORES.models)) {
         db.createObjectStore(STORES.models, { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains(STORES.aiCache)) {
+        const store = db.createObjectStore(STORES.aiCache, { keyPath: "phrase" });
+        store.createIndex("createdAt", "createdAt", { unique: false });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -60,6 +65,12 @@ export interface StoredModel {
   type: SignType;
   data: unknown;
   classes: string[];
+  createdAt: number;
+}
+
+export interface AiCacheRecord {
+  phrase: string;
+  completed: string;
   createdAt: number;
 }
 
@@ -174,5 +185,36 @@ export const db = {
 
   deleteModel(id: string): Promise<void> {
     return tx(STORES.models, "readwrite", (s) => s.delete(id));
+  },
+
+  clearModels(): Promise<void> {
+    return tx(STORES.models, "readwrite", (s) => s.clear());
+  },
+
+  getCachedCompletion(phrase: string): Promise<AiCacheRecord | undefined> {
+    return tx(STORES.aiCache, "readonly", (s) => s.get(phrase));
+  },
+
+  saveCompletion(phrase: string, completed: string): Promise<void> {
+    return tx(STORES.aiCache, "readwrite", (s) =>
+      s.put({ phrase, completed, createdAt: Date.now() } as AiCacheRecord),
+    ).then(() => {});
+  },
+
+  clearAiCache(): Promise<void> {
+    return tx(STORES.aiCache, "readwrite", (s) => s.clear());
+  },
+
+  clearAll(): Promise<void> {
+    return openDB().then((db) => {
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORES.samples, STORES.models, STORES.aiCache], "readwrite");
+        transaction.objectStore(STORES.samples).clear();
+        transaction.objectStore(STORES.models).clear();
+        transaction.objectStore(STORES.aiCache).clear();
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+      });
+    });
   },
 };

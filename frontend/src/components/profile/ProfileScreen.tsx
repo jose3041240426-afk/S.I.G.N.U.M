@@ -114,11 +114,11 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
               padding: "12px 28px",
               borderRadius: "50px",
               border: "none",
-              background: "#0f3a73",
+              background: "var(--color-primary-dark, #0f3a73)",
               color: "#fff",
               fontWeight: 700,
               cursor: "pointer",
-              boxShadow: "0 8px 20px rgba(15, 58, 115, 0.3)",
+              boxShadow: "0 8px 20px rgba(var(--color-primary-rgb, 15, 58, 115), 0.3)",
             }}
           >
             Registrarse ahora
@@ -145,10 +145,10 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
       <LiquidGlass style={{ padding: "2.5rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "1.5rem" }}>
           <div>
-            <h2 style={{ fontSize: "2rem", fontWeight: 800, margin: 0, color: "#ffffff" }}>
+            <h2 style={{ fontSize: "2rem", fontWeight: 800, margin: 0, color: "var(--text-color, #ffffff)" }}>
               Mi Perfil
             </h2>
-            <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.8)", marginTop: "4px" }}>
+            <p style={{ fontSize: "0.9rem", color: "var(--text-color, rgba(255,255,255,0.8))", opacity: 0.85, marginTop: "4px" }}>
               Administra tu información personal de Signum
             </p>
           </div>
@@ -244,11 +244,11 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
                   padding: "14px",
                   borderRadius: "50px",
                   border: "none",
-                  background: "#0f3a73",
+                  background: "var(--color-primary-dark, #0f3a73)",
                   color: "#fff",
                   fontWeight: 700,
                   cursor: "pointer",
-                  boxShadow: "0 8px 20px rgba(15, 58, 115, 0.3)",
+                  boxShadow: "0 8px 20px rgba(var(--color-primary-rgb, 15, 58, 115), 0.3)",
                 }}
               >
                 {saving ? "Guardando..." : "Guardar Cambios"}

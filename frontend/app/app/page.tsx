@@ -10,6 +10,7 @@ import { isNativeTTSAvailable } from "@/services/tts.service";
 import type { RFModel } from "@/services/rf-inference";
 import { LiquidGlass } from "@/components/ui/LiquidGlass";
 import { getCurrentUser, recordTranslation } from "@/services/auth.service";
+import { db } from "@/lib/db";
 
 export default function Home() {
   const [isMirrored, setIsMirrored] = useState(() => {
@@ -108,18 +109,38 @@ export default function Home() {
     if (!phrase || phrase.length < 3 || isCompleting) return;
     setIsCompleting(true);
     try {
+      const cached = await db.getCachedCompletion(phrase);
+      if (cached) {
+        if (cached.completed === phrase) {
+          setStatusMessage("La IA no pudo mejorar la frase (¿tiene sentido?)");
+        } else {
+          setPhrase(cached.completed);
+          setStatusMessage("Frase corregida con IA (caché)");
+        }
+        return;
+      }
+
       const res = await fetch("/api/ai/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phrase }),
       });
       const data = await res.json();
-      if (data.completed) {
+      if (data.error) {
+        setStatusMessage(`IA no disponible: ${data.error}`);
+      } else if (data.completed && data.completed !== phrase) {
         setPhrase(data.completed);
         setStatusMessage("Frase corregida con IA");
+        await db.saveCompletion(phrase, data.completed).catch(() => {});
+      } else if (data.completed === phrase) {
+        setStatusMessage("La IA no pudo mejorar la frase (¿tiene sentido?)");
+        await db.saveCompletion(phrase, phrase).catch(() => {});
+      } else {
+        setStatusMessage("La IA no pudo mejorar la frase (¿tiene sentido?)");
       }
     } catch (err) {
       console.error("Error al completar frase:", err);
+      setStatusMessage("Error de conexión con la IA");
     } finally {
       setIsCompleting(false);
     }
@@ -656,7 +677,7 @@ export default function Home() {
                   width: "50px",
                   height: "50px",
                   borderRadius: "50%",
-                  background: isMirrored ? "rgba(59, 130, 246, 0.8)" : "rgba(0,0,0,0.6)",
+                  background: isMirrored ? "rgba(var(--color-primary-rgb, 59, 130, 246), 0.8)" : "rgba(0,0,0,0.6)",
                   border: "none",
                   color: "#fff",
                   cursor: "pointer",
@@ -727,8 +748,8 @@ export default function Home() {
                 width: "24px",
                 height: "24px",
                 borderRadius: "50%",
-                background: "#3b82f6",
-                color: "#fff",
+                background: "var(--color-primary, #3b82f6)",
+                color: "var(--color-primary-text, #fff)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -806,11 +827,11 @@ export default function Home() {
                 flexDirection: "column",
                 alignItems: "center",
                 gap: "16px",
-                border: "2px dashed #0f3a73",
+                border: "2px dashed var(--color-primary-dark, #0f3a73)",
                 color: "#0f172a"
               }}
             >
-              <div style={{ fontWeight: 700, fontSize: "1.1rem", color: "#0f3a73" }}>
+              <div style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--color-primary-dark, #0f3a73)" }}>
                 Grabando LSM con Movimiento
               </div>
               <div style={{ fontSize: "1rem", fontWeight: 600 }}>
@@ -824,7 +845,7 @@ export default function Home() {
                 style={{
                   width: "100%",
                   height: "8px",
-                  background: "rgba(15, 58, 115, 0.15)",
+                  background: "rgba(var(--color-primary-rgb, 15, 58, 115), 0.15)",
                   borderRadius: "50px",
                   overflow: "hidden",
                 }}
@@ -975,8 +996,8 @@ export default function Home() {
                         height: "60px",
                         borderRadius: "12px",
                         border: "none",
-                        background: "#0f3a73",
-                        color: "#fff",
+                        background: "var(--color-primary-dark, #0f3a73)",
+                        color: "var(--color-primary-text, #fff)",
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
@@ -1046,8 +1067,8 @@ export default function Home() {
                         height: "60px",
                         borderRadius: "12px",
                         border: "none",
-                        background: "#0f3a73",
-                        color: "#fff",
+                        background: "var(--color-primary-dark, #0f3a73)",
+                        color: "var(--color-primary-text, #fff)",
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
@@ -1100,9 +1121,24 @@ export default function Home() {
                 flexDirection: "column",
               }}
             >
-              <div style={{ flexGrow: 1, wordBreak: "break-word" }}>
-                {phrase || "La transcripcion aparecera aqui..."}
-              </div>
+              <textarea
+                value={phrase}
+                onChange={(e) => setPhrase(e.target.value)}
+                placeholder="La transcripcion aparecera aqui..."
+                style={{
+                  flexGrow: 1,
+                  width: "100%",
+                  minHeight: "120px",
+                  border: "none",
+                  background: "transparent",
+                  fontSize: "1.2rem",
+                  color: "#0f172a",
+                  resize: "vertical",
+                  outline: "none",
+                  fontFamily: "inherit",
+                  lineHeight: 1.5,
+                }}
+              />
               <div
                 style={{
                   display: "flex",
@@ -1136,7 +1172,7 @@ export default function Home() {
                     }}
                   >
                     {letter && (
-                      <span style={{ marginRight: "12px", color: "#3b82f6", fontWeight: 700 }}>
+                      <span style={{ marginRight: "12px", color: "var(--color-primary, #3b82f6)", fontWeight: 700 }}>
                         {letter} <span style={{ fontSize: "0.75rem", fontWeight: 400 }}>({confidence}%)</span>
                       </span>
                     )}
@@ -1201,7 +1237,7 @@ export default function Home() {
                         padding: "6px 12px",
                         borderRadius: "8px",
                         border: "none",
-                        background: "#0f3a73",
+                        background: "var(--color-primary-dark, #0f3a73)",
                         color: "#fff",
                         cursor: "pointer",
                         fontSize: "0.85rem",
@@ -1338,12 +1374,12 @@ export default function Home() {
               padding: "16px",
               borderRadius: "50px",
               border: "none",
-              background: "#0f3a73",
-              color: "#fff",
+              background: "var(--color-primary-dark, #0f3a73)",
+              color: "var(--color-primary-text, #fff)",
               fontSize: "1.1rem",
               fontWeight: 700,
               cursor: "pointer",
-              boxShadow: "0 8px 20px rgba(15, 58, 115, 0.3)",
+              boxShadow: "0 8px 20px rgba(var(--color-primary-rgb, 15, 58, 115), 0.3)",
               marginTop: "10px",
             }}
           >
