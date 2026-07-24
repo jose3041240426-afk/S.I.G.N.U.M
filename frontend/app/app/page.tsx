@@ -76,6 +76,15 @@ export default function Home() {
     isTrainingDynamic,
     trainingDynamicMessage,
     trainDynamic,
+    isUploading,
+    uploadMessage,
+    uploadToCollaborative,
+    isDownloading,
+    downloadMessage,
+    downloadCollaborativeModel,
+    eligibility,
+    checkEligibilityForType,
+    checkHasCollaborative,
   } = useModelTraining();
 
   const handleAutoTranslated = useCallback((label: string, confidence: number) => {
@@ -391,6 +400,47 @@ export default function Home() {
     await removeDynamic(sign);
     reloadModels();
   }, [removeDynamic, reloadModels]);
+
+  const handleUploadCollaborative = useCallback(async (type: string) => {
+    if (type === "letters") {
+      setStatusMessage("Verificando elegibilidad para letras...");
+      const el = await checkEligibilityForType("letter");
+      if (!el?.eligible) {
+        setStatusMessage(`No elegible: ${el?.reason}`);
+        return;
+      }
+      await uploadToCollaborative("letter");
+    } else if (type === "words") {
+      setStatusMessage("Verificando elegibilidad para palabras...");
+      const el = await checkEligibilityForType("word");
+      if (!el?.eligible) {
+        setStatusMessage(`No elegible: ${el?.reason}`);
+        return;
+      }
+      await uploadToCollaborative("word");
+    } else if (type === "dynamic") {
+      setStatusMessage("Verificando elegibilidad para senas dinamicas...");
+      const el = await checkEligibilityForType("dynamic");
+      if (!el?.eligible) {
+        setStatusMessage(`No elegible: ${el?.reason}`);
+        return;
+      }
+      await uploadToCollaborative("dynamic");
+    }
+  }, [checkEligibilityForType, uploadToCollaborative]);
+
+  const handleDownloadCollaborative = useCallback(async (type: string) => {
+    if (type === "letters") {
+      await downloadCollaborativeModel("letter");
+      await reloadModels();
+    } else if (type === "words") {
+      await downloadCollaborativeModel("word");
+      await reloadModels();
+    } else if (type === "dynamic") {
+      await downloadCollaborativeModel("dynamic");
+      await reloadModels();
+    }
+  }, [downloadCollaborativeModel, reloadModels]);
 
   const handleSpeakPhrase = useCallback(() => {
     const textToSpeak =
@@ -1401,6 +1451,106 @@ export default function Home() {
               {trainingMessage || trainingWordsMessage || trainingDynamicMessage}
             </div>
           )}
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+              marginTop: "16px",
+              paddingTop: "16px",
+              borderTop: "1px solid rgba(148,163,184,0.3)",
+            }}
+          >
+            <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#475569", textAlign: "center" }}>
+              Dataset Colaborativo
+            </div>
+
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              <button
+                onClick={() => handleUploadCollaborative(predictionMode)}
+                disabled={isUploading || !currentUser}
+                title="Subir tus muestras al dataset comunitario. Requiere 5+ clases y 50+ muestras."
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  borderRadius: "12px",
+                  border: "1px solid #7c3aed",
+                  background: isUploading ? "rgba(124,58,237,0.3)" : "rgba(124,58,237,0.08)",
+                  color: "#7c3aed",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
+                  cursor: isUploading || !currentUser ? "not-allowed" : "pointer",
+                  opacity: isUploading || !currentUser ? 0.5 : 1,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {isUploading ? "Subiendo..." : "Contribuir"}
+              </button>
+              <button
+                onClick={() => handleDownloadCollaborative(predictionMode)}
+                disabled={isDownloading || !currentUser}
+                title="Descargar el modelo entrenado por la comunidad"
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  borderRadius: "12px",
+                  border: "1px solid #3b82f6",
+                  background: isDownloading ? "rgba(59,130,246,0.3)" : "rgba(59,130,246,0.08)",
+                  color: "#3b82f6",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
+                  cursor: isDownloading || !currentUser ? "not-allowed" : "pointer",
+                  opacity: isDownloading || !currentUser ? 0.5 : 1,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {isDownloading ? "Descargando..." : "Descargar modelo"}
+              </button>
+            </div>
+
+            {(uploadMessage || downloadMessage) && (
+              <div
+                className="animate-fade-in"
+                style={{
+                  fontSize: "0.8rem",
+                  color: "#e2e8f0",
+                  textAlign: "center",
+                  background: "rgba(0,0,0,0.25)",
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  lineHeight: 1.4,
+                }}
+              >
+                {uploadMessage || downloadMessage}
+              </div>
+            )}
+
+            {eligibility && !eligibility.eligible && (
+              <div
+                style={{
+                  fontSize: "0.75rem",
+                  color: "#fbbf24",
+                  textAlign: "center",
+                  padding: "4px 8px",
+                }}
+              >
+                Requisito: 5+ clases y 50+ muestras. Tienes {eligibility.totalClasses} clases, {eligibility.totalSamples} muestras.
+              </div>
+            )}
+
+            {!currentUser && (
+              <div
+                style={{
+                  fontSize: "0.75rem",
+                  color: "#94a3b8",
+                  textAlign: "center",
+                }}
+              >
+                Inicia sesion para usar el dataset colaborativo
+              </div>
+            )}
+          </div>
         </LiquidGlass>
       </div>
     </>

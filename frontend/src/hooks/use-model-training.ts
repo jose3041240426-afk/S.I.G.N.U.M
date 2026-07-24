@@ -2,6 +2,14 @@ import { useState } from "react";
 import { db, type SignType } from "@/lib/db";
 import { trainRandomForest } from "@/services/rf-trainer";
 import type { RFModel } from "@/services/rf-inference";
+import {
+  checkEligibility,
+  uploadSamples,
+  downloadModelFromStorage,
+  hasCollaborativeModel,
+  type EligibilityCheck,
+  type UploadResult,
+} from "@/services/collaborative.service";
 
 async function trainForType(type: SignType): Promise<{
   model: RFModel;
@@ -52,6 +60,12 @@ export function useModelTraining() {
   const [trainingWordsMessage, setTrainingWordsMessage] = useState("");
   const [isTrainingDynamic, setIsTrainingDynamic] = useState(false);
   const [trainingDynamicMessage, setTrainingDynamicMessage] = useState("");
+
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadMessage, setDownloadMessage] = useState("");
+  const [eligibility, setEligibility] = useState<EligibilityCheck | null>(null);
 
   const trainLetters = async (): Promise<RFModel | null> => {
     setIsTraining(true);
@@ -116,6 +130,65 @@ export function useModelTraining() {
     }
   };
 
+  const checkEligibilityForType = async (type: SignType) => {
+    const result = await checkEligibility(type);
+    setEligibility(result);
+    return result;
+  };
+
+  const uploadToCollaborative = async (type: SignType): Promise<UploadResult | null> => {
+    setIsUploading(true);
+    const label = type === "letter" ? "letras" : type === "word" ? "palabras" : "senas dinamicas";
+    setUploadMessage(`Verificando y subiendo ${label}...`);
+    try {
+      const el = await checkEligibility(type);
+      if (!el.eligible) {
+        setUploadMessage(`No elegible: ${el.reason}`);
+        return null;
+      }
+      const result = await uploadSamples(type);
+      if (result.success) {
+        setUploadMessage(
+          `Subido: ${result.uploaded} muestras. Rechazadas: ${result.rejected} (baja confianza: ${result.rejectedLowConf})`,
+        );
+      } else {
+        setUploadMessage("No se subio ninguna muestra (todas rechazadas por baja confianza)");
+      }
+      return result;
+    } catch (e: any) {
+      setUploadMessage(`Error: ${e.message}`);
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const downloadCollaborativeModel = async (type: SignType) => {
+    setIsDownloading(true);
+    const label = type === "letter" ? "letras" : type === "word" ? "palabras" : "senas dinamicas";
+    setDownloadMessage(`Buscando modelo comunitario de ${label}...`);
+    try {
+      const result = await downloadModelFromStorage(type);
+      if (result) {
+        setDownloadMessage(
+          `Modelo ${result.version} descargado (${result.classes.length} clases)`,
+        );
+      } else {
+        setDownloadMessage("No hay modelo comunitario disponible aun");
+      }
+      return result;
+    } catch (e: any) {
+      setDownloadMessage(`Error: ${e.message}`);
+      return null;
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const checkHasCollaborative = async (type: SignType) => {
+    return hasCollaborativeModel(type);
+  };
+
   return {
     isTraining,
     trainingMessage,
@@ -126,5 +199,14 @@ export function useModelTraining() {
     isTrainingDynamic,
     trainingDynamicMessage,
     trainDynamic,
+    isUploading,
+    uploadMessage,
+    uploadToCollaborative,
+    isDownloading,
+    downloadMessage,
+    downloadCollaborativeModel,
+    eligibility,
+    checkEligibilityForType,
+    checkHasCollaborative,
   };
 }
