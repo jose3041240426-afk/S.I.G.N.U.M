@@ -9,7 +9,7 @@ export function FluidBackground() {
         width: "100vw",
         height: "100vh",
         zIndex: -1,
-        background: "linear-gradient(135deg, color-mix(in srgb, rgb(var(--color-primary-rgb, 10, 22, 40)) 15%, #000 85%) 0%, color-mix(in srgb, rgb(var(--color-primary-rgb, 15, 43, 74)) 35%, #000 65%) 25%, rgb(var(--color-primary-rgb, 26, 74, 122)) 50%, color-mix(in srgb, rgb(var(--color-primary-rgb, 15, 43, 74)) 35%, #000 65%) 75%, color-mix(in srgb, rgb(var(--color-primary-rgb, 10, 22, 40)) 15%, #000 85%) 100%)",
+        background: "linear-gradient(135deg, color-mix(in srgb, rgb(var(--color-primary-rgb, 59, 130, 246)) 50%, #080816 50%) 0%, color-mix(in srgb, rgb(var(--color-primary-rgb, 59, 130, 246)) 75%, #080816 25%) 30%, rgb(var(--color-primary-rgb, 59, 130, 246)) 50%, color-mix(in srgb, rgb(var(--color-primary-rgb, 59, 130, 246)) 75%, #080816 25%) 70%, color-mix(in srgb, rgb(var(--color-primary-rgb, 59, 130, 246)) 50%, #080816 50%) 100%)",
       }}
     />
   );

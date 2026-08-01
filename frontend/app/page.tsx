@@ -52,7 +52,6 @@ export default function Home() {
             fontWeight: 800,
             margin: 0,
             letterSpacing: "2px",
-            textShadow: "0 2px 10px rgba(0,0,0,0.1)",
           }}
         >
           SIGNUM
@@ -81,54 +80,14 @@ export default function Home() {
       >
         <button
           onClick={() => router.push("/login")}
-          style={{
-            width: "100%",
-            padding: "16px",
-            borderRadius: "50px",
-            border: "none",
-            background: "var(--color-primary-dark, #0f3a73)",
-            color: "#fff",
-            fontSize: "1.1rem",
-            fontWeight: 700,
-            cursor: "pointer",
-            boxShadow: "0 8px 20px rgba(15, 58, 115, 0.3)",
-            transition: "transform 0.2s ease, box-shadow 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.02)";
-            e.currentTarget.style.boxShadow = "0 12px 28px rgba(15, 58, 115, 0.4)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.boxShadow = "0 8px 20px rgba(15, 58, 115, 0.3)";
-          }}
+          className="signum-btn signum-btn--full"
         >
           Iniciar sesión
         </button>
 
         <button
           onClick={() => router.push("/register")}
-          style={{
-            width: "100%",
-            padding: "16px",
-            borderRadius: "50px",
-            border: "2px solid rgba(255,255,255,0.5)",
-            background: "rgba(255,255,255,0.1)",
-            backdropFilter: "blur(4px)",
-            color: "#fff",
-            fontSize: "1.1rem",
-            fontWeight: 700,
-            cursor: "pointer",
-            transition: "transform 0.2s ease, background 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.02)";
-            e.currentTarget.style.background = "rgba(255,255,255,0.2)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-          }}
+          className="signum-btn signum-btn--full"
         >
           Registrarse
         </button>

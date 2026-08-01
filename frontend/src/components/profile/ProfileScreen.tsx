@@ -110,16 +110,7 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
           </p>
           <button
             onClick={() => window.location.href = "/register"}
-            style={{
-              padding: "12px 28px",
-              borderRadius: "50px",
-              border: "none",
-              background: "var(--color-primary-dark, #0f3a73)",
-              color: "#fff",
-              fontWeight: 700,
-              cursor: "pointer",
-              boxShadow: "0 8px 20px rgba(var(--color-primary-rgb, 15, 58, 115), 0.3)",
-            }}
+            className="signum-btn"
           >
             Registrarse ahora
           </button>
@@ -143,30 +134,18 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
   return (
     <div style={{ maxWidth: "700px", width: "100%", margin: "1rem auto" }}>
       <LiquidGlass style={{ padding: "2.5rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "1.5rem" }}>
-          <div>
-            <h2 style={{ fontSize: "2rem", fontWeight: 800, margin: 0, color: "var(--text-color, #ffffff)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", borderBottom: "1px solid currentColor", paddingBottom: "1.5rem", opacity: 1 }}>          <div>
+            <h2 style={{ fontSize: "2rem", fontWeight: 800, margin: 0, color: "var(--container-text-color, #ffffff)" }}>
               Mi Perfil
             </h2>
-            <p style={{ fontSize: "0.9rem", color: "var(--text-color, rgba(255,255,255,0.8))", opacity: 0.85, marginTop: "4px" }}>
+            <p style={{ fontSize: "0.9rem", color: "var(--container-text-color, rgba(255,255,255,0.8))", opacity: 0.85, marginTop: "4px" }}>
               Administra tu información personal de Signum
             </p>
           </div>
           {!isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              style={{
-                padding: "8px 18px",
-                borderRadius: "50px",
-                border: "1px solid rgba(255,255,255,0.3)",
-                background: "rgba(255,255,255,0.1)",
-                color: "#fff",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.2)"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
+              className="signum-btn signum-btn--sm"
             >
               Editar Perfil
             </button>
@@ -195,7 +174,7 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   required
-                  style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(0,0,0,0.3)", color: "#fff", fontSize: "0.95rem" }}
+                  style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1px solid currentColor", background: "rgba(0,0,0,0.07)", color: "inherit", fontSize: "0.95rem" }}
                 />
               </div>
               <div>
@@ -205,7 +184,7 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
                   value={apellidoPaterno}
                   onChange={(e) => setApellidoPaterno(e.target.value)}
                   required
-                  style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(0,0,0,0.3)", color: "#fff", fontSize: "0.95rem" }}
+                  style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1px solid currentColor", background: "rgba(0,0,0,0.07)", color: "inherit", fontSize: "0.95rem" }}
                 />
               </div>
             </div>
@@ -225,10 +204,10 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
               <select
                 value={idGenero}
                 onChange={(e) => setIdGenero(Number(e.target.value))}
-                style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(0,0,0,0.8)", color: "#fff", fontSize: "0.95rem" }}
+                style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1px solid currentColor", background: "rgba(255,255,255,0.5)", color: "inherit", fontSize: "0.95rem" }}
               >
                 {generos.map((g) => (
-                  <option key={g.id_genero} value={g.id_genero} style={{ background: "#1f2937", color: "#fff" }}>
+                  <option key={g.id_genero} value={g.id_genero} style={{ background: "#ffffff", color: "#000000" }}>
                     {g.genero}
                   </option>
                 ))}
@@ -239,32 +218,15 @@ export function ProfileScreen({ userId }: ProfileScreenProps) {
               <button
                 type="submit"
                 disabled={saving}
-                style={{
-                  flex: 1,
-                  padding: "14px",
-                  borderRadius: "50px",
-                  border: "none",
-                  background: "var(--color-primary-dark, #0f3a73)",
-                  color: "#fff",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  boxShadow: "0 8px 20px rgba(var(--color-primary-rgb, 15, 58, 115), 0.3)",
-                }}
+                style={{ flex: 1 }}
+                className="signum-btn"
               >
                 {saving ? "Guardando..." : "Guardar Cambios"}
               </button>
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                style={{
-                  padding: "14px 28px",
-                  borderRadius: "50px",
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  background: "transparent",
-                  color: "#fff",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
+                className="signum-btn signum-btn--sm"
               >
                 Cancelar
               </button>

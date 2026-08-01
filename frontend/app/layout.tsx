@@ -51,6 +51,53 @@ export default function RootLayout({
             });
           `}
         </Script>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`
+            (function () {
+              try {
+                function hexToRgb(h) {
+                  h = h.replace("#", "");
+                  return parseInt(h.substring(0, 2), 16) + ", " + parseInt(h.substring(2, 4), 16) + ", " + parseInt(h.substring(4, 6), 16);
+                }
+                function contrastText(h) {
+                  h = h.replace("#", "");
+                  var r = parseInt(h.substring(0, 2), 16) / 255;
+                  var g = parseInt(h.substring(2, 4), 16) / 255;
+                  var b = parseInt(h.substring(4, 6), 16) / 255;
+                  return (0.299 * r + 0.587 * g + 0.114 * b) > 0.5 ? "#000000" : "#ffffff";
+                }
+                var pc = localStorage.getItem("primaryColor") || "#3b82f6";
+                var pts = localStorage.getItem("pointsColor") || "#3b82f6";
+                var gt = localStorage.getItem("generalTextColor") || "#ffffff";
+                var ct = localStorage.getItem("containerTextColor") || "#000000";
+                var fs = parseFloat(localStorage.getItem("fontScale") || "1");
+                var gb = localStorage.getItem("glassBorder");
+                var rgb = hexToRgb(pc);
+                var bg = "linear-gradient(135deg, color-mix(in srgb, rgb(" + rgb + ") 50%, #080816 50%) 0%, color-mix(in srgb, rgb(" + rgb + ") 75%, #080816 25%) 30%, rgb(" + rgb + ") 50%, color-mix(in srgb, rgb(" + rgb + ") 75%, #080816 25%) 70%, color-mix(in srgb, rgb(" + rgb + ") 50%, #080816 50%) 100%)";
+                var css = ":root{" +
+                  "--color-primary:" + pc + ";" +
+                  "--color-primary-rgb:" + rgb + ";" +
+                  "--color-primary-dark:" + pc + ";" +
+                  "--color-primary-light:" + pc + "aa;" +
+                  "--color-primary-text:" + contrastText(pc) + ";" +
+                  "--color-points:" + pts + ";" +
+                  "--color-points-rgb:" + hexToRgb(pts) + ";" +
+                  "--color-points-text:" + contrastText(pts) + ";" +
+                  "--general-text-color:" + gt + ";" +
+                  "--container-text-color:" + ct + ";" +
+                  "--text-color:" + gt + ";" +
+                  "--menu-bg:" + (gt === "#ffffff" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)") + ";" +
+                  "--font-scale:" + fs + ";" +
+                  (gb !== null ? "--glass-border:" + gb + "px solid rgba(255, 255, 255, 0.3);" : "") +
+                  "} body{background:" + bg + ";}";
+                var style = document.createElement("style");
+                style.id = "theme-init-style";
+                style.textContent = css;
+                document.head.appendChild(style);
+              } catch (e) {}
+            })();
+          `}
+        </Script>
         <FluidBackground />
         <svg style={{ position: "fixed", width: 0, height: 0 }}>
           <filter id="glass-blur" x="0" y="0" width="100%" height="100%" filterUnits="objectBoundingBox">

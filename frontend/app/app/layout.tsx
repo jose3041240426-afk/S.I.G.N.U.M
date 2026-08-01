@@ -25,24 +25,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [glassOpacity, setGlassOpacity] = useState(0.05);
   const [glassBorder, setGlassBorder] = useState(0);
   const [animateText, setAnimateText] = useState(true);
   const [fontScale, setFontScale] = useState(1);
   const [primaryColor, setPrimaryColor] = useState("#3b82f6");
   const [pointsColor, setPointsColor] = useState("#3b82f6");
+  const [generalTextColor, setGeneralTextColor] = useState<string | null>(null);
+  const [containerTextColor, setContainerTextColor] = useState<string | null>(null);
 
   useEffect(() => {
     getCurrentUser().then(setCurrentUser).catch(console.error);
     
     if (typeof window !== "undefined") {
-      const savedOpacity = localStorage.getItem("glassOpacity");
-      if (savedOpacity !== null) {
-        setGlassOpacity(parseFloat(savedOpacity));
-      } else {
-        setGlassOpacity(0.05);
-      }
-
       const savedBorder = localStorage.getItem("glassBorder");
       if (savedBorder !== null) {
         setGlassBorder(parseInt(savedBorder, 10));
@@ -61,14 +55,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       const savedPointsColor = localStorage.getItem("pointsColor");
       if (savedPointsColor !== null) {
         setPointsColor(savedPointsColor);
+      }
+
+      const savedGeneralText = localStorage.getItem("generalTextColor");
+      if (savedGeneralText !== null) {
+        setGeneralTextColor(savedGeneralText);
+      }
+
+      const savedContainerText = localStorage.getItem("containerTextColor");
+      if (savedContainerText !== null) {
+        setContainerTextColor(savedContainerText);
       }
     }
 
     const handleStorageChange = () => {
-      const savedOpacity = localStorage.getItem("glassOpacity");
-      if (savedOpacity !== null) {
-        setGlassOpacity(parseFloat(savedOpacity));
-      }
       const savedBorder = localStorage.getItem("glassBorder");
       if (savedBorder !== null) {
         setGlassBorder(parseInt(savedBorder, 10));
@@ -85,19 +85,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       if (savedPointsColor !== null) {
         setPointsColor(savedPointsColor);
       }
+      const savedGeneral = localStorage.getItem("generalTextColor");
+      if (savedGeneral !== null) setGeneralTextColor(savedGeneral);
+      else setGeneralTextColor(null);
+      const savedContainer = localStorage.getItem("containerTextColor");
+      if (savedContainer !== null) setContainerTextColor(savedContainer);
+      else setContainerTextColor(null);
     };
     window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("glassOpacityChange", handleStorageChange as EventListener);
     window.addEventListener("glassBorderChange", handleStorageChange as EventListener);
     window.addEventListener("fontScaleChange", handleStorageChange as EventListener);
     window.addEventListener("primaryColorChange", handleStorageChange as EventListener);
-    
+    window.addEventListener("generalTextColorChange", handleStorageChange as EventListener);
+    window.addEventListener("containerTextColorChange", handleStorageChange as EventListener);
+
     return () => {
       window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("glassOpacityChange", handleStorageChange as EventListener);
       window.removeEventListener("glassBorderChange", handleStorageChange as EventListener);
       window.removeEventListener("fontScaleChange", handleStorageChange as EventListener);
       window.removeEventListener("primaryColorChange", handleStorageChange as EventListener);
+      window.removeEventListener("generalTextColorChange", handleStorageChange as EventListener);
+      window.removeEventListener("containerTextColorChange", handleStorageChange as EventListener);
     };
   }, []);
 
@@ -130,6 +138,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     pathname === "/app/acerca-de/evaluar" ? "EVALUAR" :
     pathname === "/app/admin/dashboard" ? "DASHBOARD" : "SIGNUM";
 
+  const effectiveGeneralText = generalTextColor || "#ffffff";
+  const effectiveContainerText = containerTextColor || "#000000";
+  const menuBg = effectiveGeneralText === "#ffffff" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)";
+
   return (
     <>
       <style>{`
@@ -153,10 +165,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           animation: drawText 2.5s ease-in-out forwards, fillText 0.5s ease 2s forwards;
         }
         :root {
-          --glass-opacity: ${glassOpacity};
           --glass-border: ${glassBorder}px solid rgba(255, 255, 255, 0.3);
-          --text-color: ${(glassOpacity < 0.4 && contrastText(primaryColor) === "#ffffff") ? "#ffffff" : "#000000"};
-          --text-shadow: ${(glassOpacity < 0.4 && contrastText(primaryColor) === "#ffffff") ? "0 1px 3px rgba(0,0,0,0.6)" : "none"};
+          --general-text-color: ${effectiveGeneralText};
+          --container-text-color: ${effectiveContainerText};
+          --text-color: ${effectiveGeneralText};
+          --menu-bg: ${menuBg};
           --font-scale: ${fontScale};
           --color-primary: ${primaryColor};
           --color-primary-rgb: ${hexToRgb(primaryColor)};
@@ -169,9 +182,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         }
         body, .app-content {
           font-size: calc(100% * var(--font-scale, 1));
+          color: var(--general-text-color, #ffffff);
         }
         body {
-          background: linear-gradient(135deg, color-mix(in srgb, rgb(var(--color-primary-rgb, 10, 22, 40)) 15%, #000 85%) 0%, color-mix(in srgb, rgb(var(--color-primary-rgb, 15, 43, 74)) 35%, #000 65%) 25%, rgb(var(--color-primary-rgb, 26, 74, 122)) 50%, color-mix(in srgb, rgb(var(--color-primary-rgb, 15, 43, 74)) 35%, #000 65%) 75%, color-mix(in srgb, rgb(var(--color-primary-rgb, 10, 22, 40)) 15%, #000 85%) 100%);
+          background: linear-gradient(135deg, color-mix(in srgb, rgb(${hexToRgb(primaryColor)}) 50%, #080816 50%) 0%, color-mix(in srgb, rgb(${hexToRgb(primaryColor)}) 75%, #080816 25%) 30%, rgb(${hexToRgb(primaryColor)}) 50%, color-mix(in srgb, rgb(${hexToRgb(primaryColor)}) 75%, #080816 25%) 70%, color-mix(in srgb, rgb(${hexToRgb(primaryColor)}) 50%, #080816 50%) 100%);
         }
         p, h1, h2, h3, h4, h5, h6, span, label, td, th, li, option {
           transition: color 0.3s ease;

@@ -172,18 +172,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            style={{
-              width: "100%",
-              padding: "14px",
-              borderRadius: "50px",
-              border: "none",
-              background: loading ? "rgba(var(--color-primary-rgb, 15, 58, 115), 0.5)" : "var(--color-primary-dark, #0f3a73)",
-              color: "#fff",
-              fontSize: "1rem",
-              fontWeight: 700,
-              cursor: loading ? "not-allowed" : "pointer",
-              marginTop: "8px",
-            }}
+            className="signum-btn signum-btn--full"
           >
             {loading ? "Registrando..." : "Crear cuenta"}
           </button>

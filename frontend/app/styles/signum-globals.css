@@ -298,14 +298,13 @@
   border-radius: 9px;
   overflow: hidden;
   cursor: pointer;
-  accent-color: #fff;
 }
 
 .custom-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 0;
   height: 0;
-  box-shadow: -9999px 0 0 9999px #fff;
+  box-shadow: -9999px 0 0 9999px rgb(160, 160, 160);
 }
 
 .custom-slider::-moz-range-thumb {
@@ -313,7 +312,7 @@
   height: 0;
   border-radius: 0;
   border: none;
-  box-shadow: -9999px 0 0 9999px #fff;
+  box-shadow: -9999px 0 0 9999px rgb(160, 160, 160);
 }
 
 /* Lista de voces ElevenLabs con hover */
@@ -489,4 +488,259 @@
 
 .accordion-close {
   animation: accordionClose 0.3s ease-in forwards;
+}
+
+/* Botón colaborativo primario (Contribuir) */
+.collab-btn {
+  cursor: pointer;
+  position: relative;
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-primary, #3b82f6);
+  border: 2px solid var(--color-primary, #3b82f6);
+  border-radius: 12px;
+  background-color: transparent;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+  overflow: hidden;
+  z-index: 0;
+  white-space: nowrap;
+  text-align: center;
+}
+.collab-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 140px;
+  height: 140px;
+  border-radius: inherit;
+  scale: 0;
+  z-index: -1;
+  background-color: var(--color-primary, #3b82f6);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1);
+}
+.collab-btn:hover::before {
+  scale: 2.5;
+}
+.collab-btn:hover {
+  color: var(--color-primary-text, #ffffff);
+  box-shadow: 0 0px 14px color-mix(in srgb, var(--color-primary, #3b82f6) 40%, transparent);
+}
+.collab-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+  box-shadow: none;
+}
+.collab-btn:disabled::before {
+  display: none;
+}
+
+/* Color modal */
+.color-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.color-modal-enter {
+  animation: modalFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.color-modal-exit {
+  animation: modalFadeOut 0.25s ease-in forwards;
+}
+
+.color-modal {
+  background: rgba(30, 41, 59, 0.97);
+  border-radius: 24px;
+  padding: 28px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.color-picker-row input[type="color"] {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 2px solid currentColor;
+  opacity: 0.5;
+  cursor: pointer;
+  background: none;
+  padding: 2px;
+}
+
+.color-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.color-section-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: inherit;
+}
+
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.color-hex-label {
+  font-size: 0.85rem;
+  color: inherit;
+  opacity: 0.7;
+  font-family: monospace;
+}
+
+.color-desc {
+  font-size: 0.75rem;
+  color: inherit;
+  opacity: 0.55;
+  line-height: 1.3;
+}
+
+.color-btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.color-option-btn {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: 12px;
+  border: 2px solid currentColor;
+  opacity: 0.5;
+  background: transparent;
+  color: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.color-option-btn[data-selected="true"] {
+  border-color: var(--color-primary, #3b82f6);
+  opacity: 1;
+  background: color-mix(in srgb, var(--color-primary, #3b82f6) 20%, transparent);
+  color: inherit;
+}
+
+.color-option-btn:hover {
+  opacity: 0.8;
+  border-color: var(--color-primary, #3b82f6);
+}
+
+.color-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.color-modal-cancel {
+  flex: 1;
+  padding: 12px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.color-modal-cancel:hover {
+  background: rgba(255,255,255,0.05);
+  color: #e2e8f0;
+}
+
+.color-modal-apply {
+  flex: 1;
+  padding: 12px;
+  border-radius: 50px;
+  border: none;
+  background: var(--color-primary, #3b82f6);
+  color: var(--color-primary-text, #ffffff);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary, #3b82f6) 40%, transparent);
+}
+
+.color-modal-apply:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-primary, #3b82f6) 50%, transparent);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.92) translateY(16px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes modalFadeOut {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.92) translateY(16px); }
+}
+
+/* Botón de acción principal Signum (estilo azul con fondo blanco) */
+.signum-btn {
+  border: 2px solid var(--color-primary, #315cfd);
+  border-radius: 45px;
+  background: #ffffff;
+  color: var(--color-primary, #315cfd);
+  font-weight: 600;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 7px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.signum-btn:hover {
+  background: var(--color-primary, #315cfd);
+  color: #ffffff;
+  font-size: 0.95em;
+}
+
+.signum-btn:active {
+  transform: scale(0.97);
+}
+
+.signum-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.signum-btn--full {
+  width: 100%;
+}
+
+.signum-btn--sm {
+  padding: 5px 14px;
+  font-size: 0.8em;
+}
+
+.signum-btn--sm:hover {
+  font-size: 0.9em;
 }

@@ -5,60 +5,6 @@ import { getCurrentUser, getUserRoles, getAllEvaluaciones } from "@/services/aut
 import { LiquidGlass } from "@/components/ui/LiquidGlass";
 import * as XLSX from "xlsx";
 
-const excelBtnStyles = `
-  .excel-btn {
-    cursor: pointer;
-    position: relative;
-    padding: 14px 28px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #22c55e;
-    border: 2px solid #22c55e;
-    border-radius: 50px;
-    background-color: transparent;
-    transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
-    overflow: hidden;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 0;
-  }
-  .excel-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    margin: auto;
-    width: 200px;
-    height: 200px;
-    border-radius: inherit;
-    scale: 0;
-    z-index: -1;
-    background-color: #22c55e;
-    transition: all 1.5s cubic-bezier(0.23, 1, 0.320, 1);
-  }
-  .excel-btn:hover::before {
-    scale: 3;
-  }
-  .excel-btn:hover {
-    color: #212121;
-    box-shadow: 0 0px 20px rgba(34, 197, 94, 0.4);
-  }
-  .excel-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-    border-color: rgba(255,255,255,0.1);
-    color: rgba(255,255,255,0.3);
-  }
-  .excel-btn:disabled::before {
-    display: none;
-  }
-  .excel-btn:disabled:hover {
-    scale: 1;
-    box-shadow: none;
-    color: rgba(255,255,255,0.3);
-  }
-`;
-
 export default function AdminDashboard() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
@@ -183,8 +129,7 @@ export default function AdminDashboard() {
           </h2>
           <p style={{ fontSize: "0.9rem", color: "var(--text-color, rgba(255,255,255,0.8))", opacity: 0.85, margin: 0 }}>{total} evaluaciones recibidas</p>
         </div>
-        <style>{excelBtnStyles}</style>
-        <button onClick={exportExcel} disabled={total === 0} className="excel-btn">
+        <button onClick={exportExcel} disabled={total === 0} className="signum-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
@@ -200,19 +145,19 @@ export default function AdminDashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
         <LiquidGlass style={{ padding: "1.5rem", textAlign: "center" }}>
           <div style={{ fontSize: "2.5rem", fontWeight: 800 }}>{total}</div>
-          <div style={{ fontSize: "0.85rem", color: "var(--text-color, #ffffff)", opacity: 0.85 }}>Evaluaciones totales</div>
+          <div style={{ fontSize: "0.85rem", color: "var(--container-text-color, rgba(255,255,255,0.8))", opacity: 0.85 }}>Evaluaciones totales</div>
         </LiquidGlass>
         <LiquidGlass style={{ padding: "1.5rem", textAlign: "center" }}>
-          <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--text-color, #ffffff)" }}>{avgLikert("experiencia_general")}</div>
-          <div style={{ fontSize: "0.85rem", color: "var(--text-color, #ffffff)", opacity: 0.85 }}>Experiencia general (prom)</div>
+          <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--container-text-color, #ffffff)" }}>{avgLikert("experiencia_general")}</div>
+          <div style={{ fontSize: "0.85rem", color: "var(--container-text-color, rgba(255,255,255,0.8))", opacity: 0.85 }}>Experiencia general (prom)</div>
         </LiquidGlass>
         <LiquidGlass style={{ padding: "1.5rem", textAlign: "center" }}>
-          <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--text-color, #ffffff)" }}>{avgLikert("util_educativo")}</div>
-          <div style={{ fontSize: "0.85rem", color: "var(--text-color, #ffffff)", opacity: 0.85 }}>Utilidad educativa (prom)</div>
+          <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--container-text-color, #ffffff)" }}>{avgLikert("util_educativo")}</div>
+          <div style={{ fontSize: "0.85rem", color: "var(--container-text-color, rgba(255,255,255,0.8))", opacity: 0.85 }}>Utilidad educativa (prom)</div>
         </LiquidGlass>
         <LiquidGlass style={{ padding: "1.5rem", textAlign: "center" }}>
-          <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--text-color, #ffffff)" }}>{count("recomendaria", "Sí")}</div>
-          <div style={{ fontSize: "0.85rem", color: "var(--text-color, #ffffff)", opacity: 0.85 }}>Lo recomendarían</div>
+          <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--container-text-color, #ffffff)" }}>{count("recomendaria", "Sí")}</div>
+          <div style={{ fontSize: "0.85rem", color: "var(--container-text-color, rgba(255,255,255,0.8))", opacity: 0.85 }}>Lo recomendarían</div>
         </LiquidGlass>
       </div>
 

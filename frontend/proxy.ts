@@ -4,9 +4,9 @@ import type { NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   const response = NextResponse.next();
 
-  // Prevenir clickjacking
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("Content-Security-Policy", "frame-ancestors 'none'");
+  // Prevenir clickjacking (SAMEORIGIN permite que la propia app incruste el PDF del diccionario)
+  response.headers.set("X-Frame-Options", "SAMEORIGIN");
+  response.headers.set("Content-Security-Policy", "frame-ancestors 'self'");
 
   // Forzar HTTPS (solo en producción)
   if (process.env.NODE_ENV === "production") {

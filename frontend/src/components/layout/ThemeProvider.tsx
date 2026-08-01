@@ -15,12 +15,15 @@ function contrastText(hex: string): string {
   return l > 0.5 ? "#000000" : "#ffffff";
 }
 
+const SOFT_BG = `linear-gradient(135deg, color-mix(in srgb, rgb(%primary%) 50%, #080816 50%) 0%, color-mix(in srgb, rgb(%primary%) 75%, #080816 25%) 30%, rgb(%primary%) 50%, color-mix(in srgb, rgb(%primary%) 75%, #080816 25%) 70%, color-mix(in srgb, rgb(%primary%) 50%, #080816 50%) 100%)`;
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const primaryColor = localStorage.getItem("primaryColor") || "#3b82f6";
     const pointsColor = localStorage.getItem("pointsColor") || "#3b82f6";
-    const glassOpacity = parseFloat(localStorage.getItem("glassOpacity") || "0.05");
     const fontScale = parseFloat(localStorage.getItem("fontScale") || "1");
+    const generalTextColor = localStorage.getItem("generalTextColor");
+    const containerTextColor = localStorage.getItem("containerTextColor");
 
     document.documentElement.style.setProperty("--color-primary", primaryColor);
     document.documentElement.style.setProperty("--color-primary-rgb", hexToRgb(primaryColor));
@@ -30,15 +33,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.style.setProperty("--color-points", pointsColor);
     document.documentElement.style.setProperty("--color-points-rgb", hexToRgb(pointsColor));
     document.documentElement.style.setProperty("--color-points-text", contrastText(pointsColor));
-    document.documentElement.style.setProperty("--glass-opacity", String(glassOpacity));
 
-    const textColor = (glassOpacity < 0.4 && contrastText(primaryColor) === "#ffffff") ? "#ffffff" : "#000000";
-    document.documentElement.style.setProperty("--text-color", textColor);
-    document.documentElement.style.setProperty("--text-shadow", textColor === "#ffffff" ? "0 1px 3px rgba(0,0,0,0.6)" : "none");
-    document.documentElement.style.setProperty("--menu-bg", textColor === "#ffffff" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)");
+    const generalText = generalTextColor || "#ffffff";
+    const containerText = containerTextColor || "#000000";
+    document.documentElement.style.setProperty("--general-text-color", generalText);
+    document.documentElement.style.setProperty("--container-text-color", containerText);
+    document.documentElement.style.setProperty("--text-color", generalText);
+    document.documentElement.style.setProperty("--menu-bg", generalText === "#ffffff" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)");
     document.documentElement.style.setProperty("--font-scale", String(fontScale));
 
-    document.body.style.background = `linear-gradient(135deg, color-mix(in srgb, rgb(${hexToRgb(primaryColor)}) 15%, #000 85%) 0%, color-mix(in srgb, rgb(${hexToRgb(primaryColor)}) 35%, #000 65%) 25%, rgb(${hexToRgb(primaryColor)}) 50%, color-mix(in srgb, rgb(${hexToRgb(primaryColor)}) 35%, #000 65%) 75%, color-mix(in srgb, rgb(${hexToRgb(primaryColor)}) 15%, #000 85%) 100%)`;
+    document.body.style.setProperty("background", SOFT_BG.replace(/%primary%/g, hexToRgb(primaryColor)), "important");
 
     if (fontScale !== 1) {
       document.body.style.fontSize = `calc(100% * ${fontScale})`;
@@ -52,26 +56,28 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         document.documentElement.style.setProperty("--color-primary-dark", pc);
         document.documentElement.style.setProperty("--color-primary-light", pc + "aa");
         document.documentElement.style.setProperty("--color-primary-text", contrastText(pc));
-        const go = parseFloat(localStorage.getItem("glassOpacity") || "0.05");
-        const tc = (go < 0.4 && contrastText(pc) === "#ffffff") ? "#ffffff" : "#000000";
-        document.documentElement.style.setProperty("--text-color", tc);
-        document.documentElement.style.setProperty("--text-shadow", tc === "#ffffff" ? "0 1px 3px rgba(0,0,0,0.6)" : "none");
-        document.documentElement.style.setProperty("--menu-bg", tc === "#ffffff" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)");
-        document.body.style.background = `linear-gradient(135deg, color-mix(in srgb, rgb(${hexToRgb(pc)}) 15%, #000 85%) 0%, color-mix(in srgb, rgb(${hexToRgb(pc)}) 35%, #000 65%) 25%, rgb(${hexToRgb(pc)}) 50%, color-mix(in srgb, rgb(${hexToRgb(pc)}) 35%, #000 65%) 75%, color-mix(in srgb, rgb(${hexToRgb(pc)}) 15%, #000 85%) 100%)`;
+
+        const gt = localStorage.getItem("generalTextColor") || "#ffffff";
+        const ct = localStorage.getItem("containerTextColor") || "#000000";
+        document.documentElement.style.setProperty("--general-text-color", gt);
+        document.documentElement.style.setProperty("--container-text-color", ct);
+        document.documentElement.style.setProperty("--text-color", gt);
+        document.documentElement.style.setProperty("--menu-bg", gt === "#ffffff" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)");
+        document.body.style.setProperty("background", SOFT_BG.replace(/%primary%/g, hexToRgb(pc)), "important");
       }
     };
 
     window.addEventListener("primaryColorChange", handle);
     window.addEventListener("fontScaleChange", handle);
-    window.addEventListener("glassOpacityChange", handle);
-    window.addEventListener("glassBorderChange", handle);
+    window.addEventListener("generalTextColorChange", handle);
+    window.addEventListener("containerTextColorChange", handle);
     window.addEventListener("storage", handle);
 
     return () => {
       window.removeEventListener("primaryColorChange", handle);
       window.removeEventListener("fontScaleChange", handle);
-      window.removeEventListener("glassOpacityChange", handle);
-      window.removeEventListener("glassBorderChange", handle);
+      window.removeEventListener("generalTextColorChange", handle);
+      window.removeEventListener("containerTextColorChange", handle);
       window.removeEventListener("storage", handle);
     };
   }, []);

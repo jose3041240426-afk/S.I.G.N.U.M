@@ -19,6 +19,7 @@ export function LiquidGlass({
           border-radius: 24px;
           overflow: hidden;
           border: var(--glass-border, 0px solid rgba(255, 255, 255, 0.3));
+          color: var(--container-text-color, #000000);
         }
         .lq-bend {
           position: absolute;
@@ -29,7 +30,7 @@ export function LiquidGlass({
           pointer-events: none;
           backdrop-filter: blur(8px) saturate(180%);
           filter: url(#glass-blur);
-          background: rgba(255, 255, 255, var(--glass-opacity, 0.4));
+          background: rgba(255, 255, 255, 1);
         }
         .lq-face {
           position: absolute;
@@ -38,16 +39,10 @@ export function LiquidGlass({
           border-radius: 24px;
           box-shadow: 0 4px 4px rgba(0, 0, 0, 0.15), 0 0 12px rgba(0, 0, 0, 0.08);
           pointer-events: none;
-          background: rgba(255, 255, 255, calc(var(--glass-opacity, 0.4) * 0.5));
+          background: rgba(255, 255, 255, 1);
         }
         .lq-edge {
-          position: absolute;
-          inset: 0;
-          z-index: 2;
-          border-radius: 24px;
-          box-shadow: inset 2px 2px 3px 0 rgba(255, 255, 255, calc(var(--glass-opacity, 0.4) * 0.875)),
-            inset -2px -2px 3px 0 rgba(255, 255, 255, calc(var(--glass-opacity, 0.4) * 0.875));
-          pointer-events: none;
+          display: none;
         }
       `}} />
       <div className={"lq-container" + (className ? " " + className : "")} style={style} onClick={onClick}>

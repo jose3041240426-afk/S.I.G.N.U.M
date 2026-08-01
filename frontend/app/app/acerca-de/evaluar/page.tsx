@@ -279,14 +279,7 @@ export default function EvaluarPage() {
             </div>
           )}
 
-          <button type="submit" disabled={submitting}
-            style={{
-              width: "100%", padding: "16px", borderRadius: "50px", border: "none",
-              background: submitting ? "rgba(var(--color-primary-rgb, 15, 58, 115), 0.5)" : "var(--color-primary-dark, #0f3a73)",
-              color: "#fff", fontSize: "1.1rem", fontWeight: 700,
-              cursor: submitting ? "not-allowed" : "pointer", marginTop: "0.5rem",
-            }}
-          >
+          <button type="submit" disabled={submitting} className="signum-btn signum-btn--full">
             {submitting ? "Enviando..." : "Enviar evaluación"}
           </button>
         </form>

@@ -18,6 +18,9 @@ Thumbs.db
 # Node
 node_modules/
 
+# Next.js build
+.next/
+
 # IDE
 .vscode/
 .idea/
@@ -26,3 +29,8 @@ node_modules/
 .env.local
 .env*.local
 ml-service/.env
+mobile/.env
+
+# Expo
+mobile/node_modules/
+mobile/.expo/

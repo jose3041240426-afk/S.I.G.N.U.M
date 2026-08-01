@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "SIGNUM",
+    "slug": "signum-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#080816"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.signum.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "SIGNUM necesita acceso a la cámara para reconocer señas de la Lengua de Señas Mexicana.",
+        "NSMicrophoneUsageDescription": "SIGNUM usa el micrófono para la reproducción de voz.",
+        "NSPhotoLibraryUsageDescription": "SIGNUM puede acceder a fotos para configuración de perfil."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#080816"
+      },
+      "package": "com.signum.mobile",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.INTERNET"
+      ]
+    },
+    "plugins": [
+      "expo-camera",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "newArchEnabled": true
+          },
+          "android": {
+            "newArchEnabled": true
+          }
+        }
+      ],
+      "expo-secure-store",
+      "expo-sqlite"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "signum-mobile"
+      }
+    }
+  }
+}

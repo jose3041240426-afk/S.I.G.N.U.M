@@ -81,16 +81,7 @@ export function StatsScreen({ userId }: StatsScreenProps) {
           </p>
           <button
             onClick={() => window.location.href = "/login"}
-            style={{
-              padding: "12px 28px",
-              borderRadius: "50px",
-              border: "none",
-              background: "var(--color-primary-dark, #0f3a73)",
-              color: "#fff",
-              fontWeight: 700,
-              cursor: "pointer",
-              boxShadow: "0 8px 20px rgba(15, 58, 115, 0.3)",
-            }}
+            className="signum-btn"
           >
             Iniciar sesión
           </button>
@@ -213,7 +204,7 @@ export function StatsScreen({ userId }: StatsScreenProps) {
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.9rem" }}>
                 <thead>
-                  <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.15)", opacity: 0.7 }}>
+                  <tr style={{ borderBottom: "1px solid currentColor", opacity: 0.4 }}>
                     <th style={{ padding: "12px 8px" }}>Tipo</th>
                     <th style={{ padding: "12px 8px" }}>Original</th>
                     <th style={{ padding: "12px 8px" }}>Traducción</th>
@@ -223,17 +214,17 @@ export function StatsScreen({ userId }: StatsScreenProps) {
                 </thead>
                 <tbody>
                   {translations.map((t) => (
-                    <tr key={t.id_traduccion} style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.03)"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                    <tr key={t.id_traduccion} style={{ borderBottom: "1px solid currentColor", opacity: 1, transition: "background 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.background = "rgba(127,127,127,0.1)"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
                       <td style={{ padding: "14px 8px" }}>
-                        <span style={{ background: "rgba(37,99,235,0.2)", color: "#ffffff", padding: "4px 8px", borderRadius: "12px", fontSize: "0.75rem", fontWeight: 600 }}>
+                        <span style={{ background: "rgba(37,99,235,0.2)", color: "inherit", padding: "4px 8px", borderRadius: "12px", fontSize: "0.75rem", fontWeight: 600 }}>
                           {t.catalogo_tipo_traduccion?.tipo || "LSM"}
                         </span>
                       </td>
                       <td style={{ padding: "14px 8px", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.texto_original}</td>
-                      <td style={{ padding: "14px 8px", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#ffffff", fontWeight: 500 }}>{t.texto_traducido}</td>
+                      <td style={{ padding: "14px 8px", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "inherit", fontWeight: 500 }}>{t.texto_traducido}</td>
                       <td style={{ padding: "14px 8px" }}>
                         <span style={{
-                          color: "#ffffff",
+                          color: "inherit",
                           fontWeight: 600,
                           fontSize: "0.85rem"
                         }}>
@@ -259,7 +250,7 @@ export function StatsScreen({ userId }: StatsScreenProps) {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               {logins.map((l) => (
-                <div key={l.id_login} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(255,255,255,0.04)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.04)" }}>
+                <div key={l.id_login} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(127,127,127,0.05)", borderRadius: "12px", border: "1px solid currentColor", opacity: 1 }}>
                   <div>
                     <p style={{ margin: 0, fontSize: "0.85rem", fontWeight: 600 }}>Dirección IP</p>
                     <p style={{ margin: "2px 0 0 0", fontSize: "0.8rem", opacity: 0.6 }}>{l.direccion_ip || "N/A"}</p>
