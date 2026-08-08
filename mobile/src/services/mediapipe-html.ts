@@ -77,7 +77,12 @@ export function buildMediaPipeHTML(isMirrored: boolean, captureInterval: number,
     try {
       statusEl.textContent = "Solicitando cámara...";
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+        video: {
+          facingMode: "user",
+          width: { ideal: 480 },
+          height: { ideal: 360 },
+          frameRate: { ideal: 30, max: 30 },
+        },
         audio: false,
       });
       video.srcObject = stream;
@@ -96,10 +101,11 @@ export function buildMediaPipeHTML(isMirrored: boolean, captureInterval: number,
       const vision = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm"
       );
+      const delegate = (typeof navigator !== "undefined" && navigator.gpu) ? "GPU" : "CPU";
       handLandmarker = await HandLandmarker.createFromOptions(vision, {
         baseOptions: {
           modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task",
-          delegate: "CPU",
+          delegate: delegate,
         },
         numHands: 2,
         runningMode: "VIDEO",
@@ -110,7 +116,7 @@ export function buildMediaPipeHTML(isMirrored: boolean, captureInterval: number,
       clearTimeout(modelTimeout);
       statusEl.textContent = "Listo";
       setTimeout(() => { statusEl.style.display = "none"; }, 1000);
-      requestAnimationFrame(renderLoop);
+      scheduleNext();
     } catch (e) {
       console.error("init error", e);
       let msg = "Error de cámara";
@@ -188,16 +194,32 @@ export function buildMediaPipeHTML(isMirrored: boolean, captureInterval: number,
   }
 
   let cachedResults = null;
+  let frameCount = 0;
+  const SNAPSHOT_EVERY = 8;
+  let videoFrameCb = null;
+
+  function postResult(detectionResult, withSnapshot) {
+    const payload = {
+      type: "detection",
+      handDetected: detectionResult.handDetected,
+      landmarks: detectionResult.landmarks,
+      snapshot: null,
+    };
+    if (withSnapshot) {
+      try { payload.snapshot = canvas.toDataURL("image/jpeg", 0.5); } catch {}
+    }
+    window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+  }
 
   function renderLoop() {
     if (!running) return;
     if (!ctx || video.readyState < 2) {
-      requestAnimationFrame(renderLoop);
+      scheduleNext();
       return;
     }
 
-    const w = video.videoWidth || 640;
-    const h = video.videoHeight || 480;
+    const w = video.videoWidth || 480;
+    const h = video.videoHeight || 360;
     if (canvas.width !== w) canvas.width = w;
     if (canvas.height !== h) canvas.height = h;
 
@@ -218,6 +240,7 @@ export function buildMediaPipeHTML(isMirrored: boolean, captureInterval: number,
     }
 
     let detectionResult;
+    let handsDrawn = false;
 
     if (cachedResults && cachedResults.landmarks && cachedResults.landmarks.length > 0) {
       for (let i = 0; i < cachedResults.landmarks.length; i++) {
@@ -228,6 +251,7 @@ export function buildMediaPipeHTML(isMirrored: boolean, captureInterval: number,
         const color = isRightHand ? "#4ade80" : POINTS_COLOR;
         drawHand(lms, label, color, canvas.width, canvas.height);
       }
+      handsDrawn = true;
 
       const firstHand = cachedResults.landmarks[0];
       const baseX = firstHand[0].x;
@@ -265,16 +289,21 @@ export function buildMediaPipeHTML(isMirrored: boolean, captureInterval: number,
     }
 
     if (detectionResult.handDetected !== undefined) {
-      const snapshot = canvas.toDataURL("image/jpeg", 0.6);
-      window.ReactNativeWebView.postMessage(JSON.stringify({
-        type: "detection",
-        handDetected: detectionResult.handDetected,
-        landmarks: detectionResult.landmarks,
-        snapshot: snapshot,
-      }));
+      frameCount++;
+      const withSnapshot = (frameCount % SNAPSHOT_EVERY) === 0 || detectionResult.handDetected !== true;
+      postResult(detectionResult, withSnapshot);
     }
 
-    requestAnimationFrame(renderLoop);
+    scheduleNext();
+  }
+
+  function scheduleNext() {
+    if (!running) return;
+    if (video.requestVideoFrameCallback) {
+      video.requestVideoFrameCallback(renderLoop);
+    } else {
+      requestAnimationFrame(renderLoop);
+    }
   }
 
   if (window.ReactNativeWebView) {
@@ -285,7 +314,7 @@ export function buildMediaPipeHTML(isMirrored: boolean, captureInterval: number,
     try {
       const msg = JSON.parse(e.data);
       if (msg.type === "stop") running = false;
-      if (msg.type === "start") { running = true; requestAnimationFrame(renderLoop); }
+      if (msg.type === "start") { running = true; scheduleNext(); }
     } catch {}
   });
 

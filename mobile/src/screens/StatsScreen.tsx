@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { getCurrentUser, getUserStats } from "@/services/auth.service";
 import { Colors } from "@/theme/colors";
+import AppMenu from "@/components/ui/AppMenu";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 
 type Props = { navigation: NativeStackNavigationProp<RootStackParamList, "Stats"> };
@@ -36,9 +37,7 @@ export default function StatsScreen({ navigation }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtn}>← Volver</Text>
-        </TouchableOpacity>
+        <AppMenu navigation={navigation} />
         <Text style={styles.title}>Estadísticas</Text>
       </View>
 
@@ -84,7 +83,6 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: Colors.background },
   container: { padding: 24, backgroundColor: Colors.background, minHeight: "100%" },
   header: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 24, paddingTop: 48 },
-  backBtn: { color: Colors.textMuted, fontSize: 16 },
   title: { fontSize: 28, fontWeight: "800", color: Colors.text, letterSpacing: 1 },
   statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginBottom: 24 },
   statCard: { flex: 1, minWidth: "44%", backgroundColor: Colors.surface, borderRadius: 16, padding: 20, alignItems: "center", borderWidth: 1, borderColor: Colors.border },

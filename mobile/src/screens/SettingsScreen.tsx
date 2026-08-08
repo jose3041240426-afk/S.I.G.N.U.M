@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { storage } from "@/lib/storage";
 import { db } from "@/lib/db";
 import { Colors } from "@/theme/colors";
+import ToggleSwitch from "@/components/ui/ToggleSwitch";
+import AppMenu from "@/components/ui/AppMenu";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 
 type Props = { navigation: NativeStackNavigationProp<RootStackParamList, "Settings"> };
-type TabKey = "camara" | "autoAdd" | "tts" | "mantenimiento";
+type TabKey = "camara" | "autoAdd" | "tts" | "datos";
 
 export default function SettingsScreen({ navigation }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>("camara");
@@ -88,7 +90,7 @@ export default function SettingsScreen({ navigation }: Props) {
     { key: "camara", label: "Cámara" },
     { key: "autoAdd", label: "Auto-Añadir" },
     { key: "tts", label: "Voz" },
-    { key: "mantenimiento", label: "Mantenimiento" },
+    { key: "datos", label: "Datos" },
   ];
 
   return (
@@ -97,9 +99,7 @@ export default function SettingsScreen({ navigation }: Props) {
         <View style={styles.toast}><Text style={styles.toastText}>{savedMessage}</Text></View>
       ) : null}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtn}>← Volver</Text>
-        </TouchableOpacity>
+        <AppMenu navigation={navigation} />
         <Text style={styles.title}>Ajustes</Text>
       </View>
 
@@ -120,7 +120,7 @@ export default function SettingsScreen({ navigation }: Props) {
                   <Text style={styles.settingLabel}>Efecto Espejo</Text>
                   <Text style={styles.settingHint}>Refleja horizontalmente la cámara</Text>
                 </View>
-                <Switch value={isMirrored} onValueChange={setIsMirrored} trackColor={{ false: "#555", true: Colors.primary }} />
+                <ToggleSwitch value={isMirrored} onValueChange={setIsMirrored} />
               </View>
               <View style={styles.settingRow}>
                 <Text style={styles.settingLabel}>Velocidad de Captura: {captureSpeed}ms</Text>
@@ -141,7 +141,7 @@ export default function SettingsScreen({ navigation }: Props) {
               <Text style={styles.settingLabel}>Tono: {ttsPitch}</Text>
             </View>
           )}
-          {activeTab === "mantenimiento" && (
+          {activeTab === "datos" && (
             <View style={styles.panel}>
               {confirmAction === "resetModel" ? (
                 <View style={styles.confirmRow}>
@@ -178,7 +178,6 @@ export default function SettingsScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { padding: 24, paddingBottom: 60, backgroundColor: Colors.background, minHeight: "100%" },
   header: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 24, paddingTop: 48 },
-  backBtn: { color: Colors.textMuted, fontSize: 16 },
   title: { fontSize: 28, fontWeight: "800", color: Colors.text, letterSpacing: 1 },
   toast: { position: "absolute", top: 16, left: "50%", transform: [{ translateX: -150 }], zIndex: 100, backgroundColor: Colors.cardDark, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 50, width: 300 },
   toastText: { color: "#fff", textAlign: "center", fontWeight: "700", fontSize: 14 },

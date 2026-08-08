@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Linking } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Colors } from "@/theme/colors";
+import AppMenu from "@/components/ui/AppMenu";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 
 type Props = { navigation: NativeStackNavigationProp<RootStackParamList, "References"> };
@@ -141,9 +142,7 @@ export default function ReferencesScreen({ navigation }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtn}>← Volver</Text>
-        </TouchableOpacity>
+        <AppMenu navigation={navigation} />
         <Text style={styles.title}>Referencias</Text>
       </View>
 
@@ -187,7 +186,6 @@ export default function ReferencesScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { padding: 24, backgroundColor: Colors.background, minHeight: "100%", paddingBottom: 48 },
   header: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 24, paddingTop: 48 },
-  backBtn: { color: Colors.textMuted, fontSize: 16 },
   title: { fontSize: 28, fontWeight: "800", color: Colors.text, letterSpacing: 1 },
   card: { backgroundColor: Colors.surface, borderRadius: 24, padding: 24, borderWidth: 1, borderColor: Colors.border },
   subtitle: { fontSize: 14, color: Colors.textMuted, textAlign: "center", marginBottom: 20 },

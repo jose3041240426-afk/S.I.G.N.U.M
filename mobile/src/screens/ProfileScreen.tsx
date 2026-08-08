@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { getCurrentUser, signOut, getUserProfile, getUserTranslations, getUserLogins } from "@/services/auth.service";
 import { Colors } from "@/theme/colors";
+import AppMenu from "@/components/ui/AppMenu";
 import type { RootStackParamList } from "@/navigation/AppNavigator";
 
 type Props = { navigation: NativeStackNavigationProp<RootStackParamList, "Profile"> };
@@ -45,9 +46,7 @@ export default function ProfileScreen({ navigation }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtn}>← Volver</Text>
-        </TouchableOpacity>
+        <AppMenu navigation={navigation} />
         <Text style={styles.title}>Mi Perfil</Text>
       </View>
 
@@ -90,7 +89,6 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: Colors.background },
   container: { padding: 24, backgroundColor: Colors.background, minHeight: "100%" },
   header: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 24, paddingTop: 48 },
-  backBtn: { color: Colors.textMuted, fontSize: 16 },
   title: { fontSize: 28, fontWeight: "800", color: Colors.text, letterSpacing: 1 },
   card: { backgroundColor: Colors.surface, borderRadius: 20, padding: 24, borderWidth: 1, borderColor: Colors.border, alignItems: "center" },
   avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: Colors.primaryDark, justifyContent: "center", alignItems: "center", marginBottom: 12 },

@@ -299,7 +299,7 @@ export default function AjustesPage() {
           padding: 14px 8px;
           font-size: 0.88rem;
           font-weight: 600;
-          color: #64748b;
+          color: color-mix(in srgb, var(--container-text-color, #64748b) 65%, transparent);
           background: transparent;
           border: none;
           cursor: pointer;
@@ -308,11 +308,11 @@ export default function AjustesPage() {
         }
 
         .aj-tab:hover {
-          color: #334155;
+          color: color-mix(in srgb, var(--container-text-color, #334155) 80%, transparent);
         }
 
         .aj-tab.active {
-          color: #0f172a;
+          color: var(--container-text-color, #0f172a);
         }
 
         .aj-tab-icon {
@@ -361,7 +361,7 @@ export default function AjustesPage() {
         .aj-label {
           font-size: 0.92rem;
           font-weight: 600;
-          color: #1e293b;
+          color: var(--container-text-color, #1e293b);
           margin-bottom: 0.55rem;
           display: flex;
           justify-content: space-between;
@@ -371,14 +371,14 @@ export default function AjustesPage() {
         .aj-label-center {
           font-size: 0.92rem;
           font-weight: 600;
-          color: #1e293b;
+          color: var(--container-text-color, #1e293b);
           text-align: center;
           margin-bottom: 0.7rem;
         }
 
         .aj-hint {
           font-size: 0.78rem;
-          color: #94a3b8;
+          color: color-mix(in srgb, var(--container-text-color, #94a3b8) 60%, transparent);
           margin-top: 6px;
         }
 
@@ -501,7 +501,7 @@ export default function AjustesPage() {
           justify-content: center;
           font-weight: 700;
           font-size: 0.92rem;
-          color: #64748b;
+          color: color-mix(in srgb, var(--container-text-color, #64748b) 65%, transparent);
           z-index: 2;
           border: none;
           background: transparent;
@@ -588,7 +588,7 @@ export default function AjustesPage() {
         .aj-maint-desc {
           text-align: center;
           font-size: 0.78rem;
-          color: #94a3b8;
+          color: color-mix(in srgb, var(--container-text-color, #94a3b8) 60%, transparent);
           margin-top: 8px;
         }
 
@@ -718,7 +718,7 @@ export default function AjustesPage() {
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.2rem 0", borderTop: "1px solid #f1f5f9" }}>
                   <div>
-                    <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem", color: "#1e293b" }}>Efecto Espejo</p>
+                    <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem", color: "var(--container-text-color, #1e293b)" }}>Efecto Espejo</p>
                     <p className="aj-hint" style={{ marginTop: 2 }}>Refleja horizontalmente la transmisión de la cámara</p>
                   </div>
                   <label className="aj-toggle-wrap">

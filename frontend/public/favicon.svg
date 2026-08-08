@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="110 380 780 780" width="100%" height="100%">
+  <g fill="none" stroke="#ffffff" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" transform="translate(0, 70)">
+    <!-- Wrist and Wave -->
+    <path d="M 406 1043 L 402 1002 L 395 979 L 376 957 L 338 925 L 325 908 L 317 892 L 307 856 L 305 827 L 305 781 L 307 771 L 328 761 L 343 749 L 357 744 L 375 743 L 394 749 L 409 763 L 418 778 L 439 836 L 449 856 L 459 864 L 472 867 L 477 866 L 485 864 L 492 857 L 500 842 L 520 751 L 527 737 L 539 725 L 549 722 L 558 722 L 573 727 L 590 749 L 601 781 L 611 840 L 619 846 L 624 847 L 639 841 L 677 778 L 697 770 L 703 774 L 703 850 L 695 886 L 684 906 L 670 924 L 634 957 L 619 974 L 612 994 L 610 1042" id="wrist_wave" />
+    
+    <!-- Finger Contour -->
+    <path d="M 308 769 L 301 764 L 296 654 L 297 553 L 300 535 L 308 516 L 317 506 L 328 501 L 357 500 L 367 503 L 373 473 L 377 466 L 391 454 L 401 451 L 421 450 L 441 452 L 454 456 L 459 452 L 461 413 L 470 387 L 485 374 L 514 370 L 533 374 L 543 384 L 547 403 L 547 449 L 549 451 L 565 449 L 591 453 L 599 457 L 607 465 L 617 483 L 621 506 L 623 630 L 626 633 L 646 628 L 667 627 L 679 629 L 691 635 L 700 647 L 704 671 L 704 758 L 699 769 L 694 772" id="finger_contour" />
+    
+    <!-- Dividers -->
+    <path d="M 367 503 L 372 674" id="divider_1" />
+    <path d="M 454 456 L 458 662" id="divider_2" />
+    <path d="M 549 451 L 547 655" id="divider_3" />
+    <path d="M 617 483 L 625 722" id="divider_4" />
+  </g>
+</svg>

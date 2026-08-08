@@ -19,7 +19,6 @@ const ColorsPanel = forwardRef<ColorsPanelHandle, ColorsModalProps>(function Col
   const [primaryColor, setPrimaryColorState] = useState("#3b82f6");
   const [pointsColor, setPointsColorState] = useState("#3b82f6");
   const [generalText, setGeneralText] = useState("auto");
-  const [containerText, setContainerText] = useState("auto");
   const [savedMessage, setSavedMessage] = useState("");
 
   const isActive = inline || open;
@@ -30,19 +29,15 @@ const ColorsPanel = forwardRef<ColorsPanelHandle, ColorsModalProps>(function Col
     setPointsColorState(localStorage.getItem("pointsColor") || "#3b82f6");
     const gt = localStorage.getItem("generalTextColor");
     setGeneralText(gt === "#000000" ? "negro" : gt === "#ffffff" ? "blanco" : "auto");
-    const ct = localStorage.getItem("containerTextColor");
-    setContainerText(ct === "#000000" ? "negro" : ct === "#ffffff" ? "blanco" : "auto");
   }, [isActive]);
 
   const handleSave = () => {
     localStorage.setItem("primaryColor", primaryColor);
     localStorage.setItem("pointsColor", pointsColor);
-    if (generalText === "auto") localStorage.removeItem("generalTextColor");
+    localStorage.removeItem("containerTextColor");
+    if (generalText === "auto") localStorage.setItem("generalTextColor", "auto");
     else if (generalText === "blanco") localStorage.setItem("generalTextColor", "#ffffff");
     else localStorage.setItem("generalTextColor", "#000000");
-    if (containerText === "auto") localStorage.removeItem("containerTextColor");
-    else if (containerText === "blanco") localStorage.setItem("containerTextColor", "#ffffff");
-    else localStorage.setItem("containerTextColor", "#000000");
     window.dispatchEvent(new Event("primaryColorChange"));
     window.dispatchEvent(new Event("generalTextColorChange"));
     window.dispatchEvent(new Event("containerTextColorChange"));
@@ -53,7 +48,7 @@ const ColorsPanel = forwardRef<ColorsPanelHandle, ColorsModalProps>(function Col
     }, 1200);
   };
 
-  useImperativeHandle(ref, () => ({ save: handleSave }), [primaryColor, pointsColor, generalText, containerText, inline, onClose]);
+  useImperativeHandle(ref, () => ({ save: handleSave }), [primaryColor, pointsColor, generalText, inline, onClose]);
 
   const content = (
     <>
@@ -94,23 +89,6 @@ const ColorsPanel = forwardRef<ColorsPanelHandle, ColorsModalProps>(function Col
             ))}
           </div>
           <div className="color-desc">Títulos, subtítulos, textos fuera de los paneles.</div>
-        </div>
-
-        <div className="color-section">
-          <div className="color-section-label">Color de texto en contenedores</div>
-          <div className="color-btn-row">
-            {["auto", "blanco", "negro"].map((opt) => (
-              <button
-                key={opt}
-                onClick={() => setContainerText(opt)}
-                className="color-option-btn"
-                data-selected={containerText === opt}
-              >
-                {opt === "auto" ? "Auto" : opt.charAt(0).toUpperCase() + opt.slice(1)}
-              </button>
-            ))}
-          </div>
-          <div className="color-desc">Textos dentro de los paneles de vidrio, modales de estadísticas y ajustes.</div>
         </div>
 
         {savedMessage && (

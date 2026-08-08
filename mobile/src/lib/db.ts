@@ -27,12 +27,13 @@ export interface AiCacheRecord {
 const DB_NAME = "signum.db";
 
 let dbInstance: SQLite.SQLiteDatabase | null = null;
+let readyPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
-async function getDB(): Promise<SQLite.SQLiteDatabase> {
-  if (dbInstance) return dbInstance;
-  dbInstance = await SQLite.openDatabaseAsync(DB_NAME);
-  await dbInstance.execAsync(`
+async function initDB(): Promise<SQLite.SQLiteDatabase> {
+  const conn = await SQLite.openDatabaseAsync(DB_NAME);
+  await conn.execAsync(`
     PRAGMA journal_mode = WAL;
+    PRAGMA foreign_keys = ON;
     CREATE TABLE IF NOT EXISTS samples (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       label TEXT NOT NULL,
@@ -57,7 +58,23 @@ async function getDB(): Promise<SQLite.SQLiteDatabase> {
       createdAt INTEGER NOT NULL
     );
   `);
-  return dbInstance;
+  return conn;
+}
+
+async function getDB(): Promise<SQLite.SQLiteDatabase> {
+  if (dbInstance) return dbInstance;
+  if (!readyPromise) {
+    readyPromise = initDB()
+      .then((conn) => {
+        dbInstance = conn;
+        return conn;
+      })
+      .catch((err) => {
+        readyPromise = null;
+        throw err;
+      });
+  }
+  return readyPromise;
 }
 
 function parseLandmarks(raw: string): number[] {
@@ -87,15 +104,22 @@ export const db = {
   },
 
   async addSamples(samples: Omit<SampleRecord, "id" | "createdAt">[]): Promise<void> {
+    if (samples.length === 0) return;
     const dbClient = await getDB();
-    await dbClient.withTransactionAsync(async () => {
+    const now = Date.now();
+    await dbClient.execAsync("BEGIN IMMEDIATE");
+    try {
       for (const sample of samples) {
         await dbClient.runAsync(
           "INSERT INTO samples (label, type, landmarks, createdAt) VALUES (?, ?, ?, ?)",
-          [sample.label, sample.type, JSON.stringify(sample.landmarks), Date.now()],
+          [sample.label, sample.type, JSON.stringify(sample.landmarks), now],
         );
       }
-    });
+      await dbClient.execAsync("COMMIT");
+    } catch (err) {
+      try { await dbClient.execAsync("ROLLBACK"); } catch { /* ignore */ }
+      throw err;
+    }
   },
 
   async getSamplesByLabel(label: string): Promise<SampleRecord[]> {
@@ -243,10 +267,15 @@ export const db = {
 
   async clearAll(): Promise<void> {
     const dbClient = await getDB();
-    await dbClient.withTransactionAsync(async () => {
+    await dbClient.execAsync("BEGIN IMMEDIATE");
+    try {
       await dbClient.runAsync("DELETE FROM samples");
       await dbClient.runAsync("DELETE FROM models");
       await dbClient.runAsync("DELETE FROM ai_cache");
-    });
+      await dbClient.execAsync("COMMIT");
+    } catch (err) {
+      try { await dbClient.execAsync("ROLLBACK"); } catch { /* ignore */ }
+      throw err;
+    }
   },
 };

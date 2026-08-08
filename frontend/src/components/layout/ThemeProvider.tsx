@@ -34,10 +34,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.style.setProperty("--color-points-rgb", hexToRgb(pointsColor));
     document.documentElement.style.setProperty("--color-points-text", contrastText(pointsColor));
 
-    const generalText = generalTextColor || "#ffffff";
-    const containerText = containerTextColor || "#000000";
+    const generalText = generalTextColor === "auto" ? contrastText(primaryColor) : (generalTextColor || "#ffffff");
     document.documentElement.style.setProperty("--general-text-color", generalText);
-    document.documentElement.style.setProperty("--container-text-color", containerText);
+    document.documentElement.style.setProperty("--container-text-color", "#000000");
     document.documentElement.style.setProperty("--text-color", generalText);
     document.documentElement.style.setProperty("--menu-bg", generalText === "#ffffff" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)");
     document.documentElement.style.setProperty("--font-scale", String(fontScale));
@@ -57,12 +56,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         document.documentElement.style.setProperty("--color-primary-light", pc + "aa");
         document.documentElement.style.setProperty("--color-primary-text", contrastText(pc));
 
-        const gt = localStorage.getItem("generalTextColor") || "#ffffff";
-        const ct = localStorage.getItem("containerTextColor") || "#000000";
-        document.documentElement.style.setProperty("--general-text-color", gt);
-        document.documentElement.style.setProperty("--container-text-color", ct);
-        document.documentElement.style.setProperty("--text-color", gt);
-        document.documentElement.style.setProperty("--menu-bg", gt === "#ffffff" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)");
+        const gt = localStorage.getItem("generalTextColor");
+        const gtVal = gt === "auto" ? contrastText(pc || "#3b82f6") : (gt || "#ffffff");
+        document.documentElement.style.setProperty("--general-text-color", gtVal);
+        document.documentElement.style.setProperty("--container-text-color", "#000000");
+        document.documentElement.style.setProperty("--text-color", gtVal);
+        document.documentElement.style.setProperty("--menu-bg", gtVal === "#ffffff" ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)");
         document.body.style.setProperty("background", SOFT_BG.replace(/%primary%/g, hexToRgb(pc)), "important");
       }
     };

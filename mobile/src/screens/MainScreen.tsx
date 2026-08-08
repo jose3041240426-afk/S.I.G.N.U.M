@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView,
-  ActivityIndicator, Switch,
+  ActivityIndicator, Animated,
 } from "react-native";
 import { WebView } from "react-native-webview";
+import Svg, { Path } from "react-native-svg";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLivePrediction, type AutoResult } from "@/hooks/use-live-prediction";
@@ -13,6 +14,7 @@ import { useTTS } from "@/hooks/use-tts";
 import { usePhraseBuilder } from "@/hooks/use-phrase-builder";
 import { getCurrentUser, recordTranslation, recordActiveTime } from "@/services/auth.service";
 import { buildMediaPipeHTML } from "@/services/mediapipe-html";
+import ToggleSwitch from "@/components/ui/ToggleSwitch";
 import { completePhrase } from "@/services/ai-complete.service";
 import { db } from "@/lib/db";
 import { storage } from "@/lib/storage";
@@ -28,11 +30,36 @@ const PREDICTION_MODES = [
   { key: "dynamic", label: "Movimiento" },
 ];
 
-function IconSVG({ name }: { name: string }) {
-  if (name === "camera") return <Text style={{ fontSize: 24, color: "#fff" }}>📷</Text>;
-  if (name === "mic") return <Text style={{ fontSize: 24, color: "#fff" }}>🔊</Text>;
-  if (name === "ai") return <Text style={{ fontSize: 14, color: "#c084fc" }}>⚡</Text>;
-  return null;
+function CameraIcon({ color = "#fff", size = 24 }: { color?: string; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path fill={color} d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2m8 3a5 5 0 0 0-5 5a5 5 0 0 0 5 5a5 5 0 0 0 5-5a5 5 0 0 0-5-5m0 2a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3" />
+    </Svg>
+  );
+}
+
+function MirrorIcon({ color = "#fff", size = 24 }: { color?: string; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path fill={color} d="M13 2v20h-2V2zM9 4.64V18.5H1.3zm6 0l7.7 13.86H15z" />
+    </Svg>
+  );
+}
+
+function VoicesIcon({ color = "#fff", size = 24 }: { color?: string; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path fill="none" stroke={color} strokeWidth={3} strokeLinecap="round" d="M4 10v4m4-7v10m4-13v16m4-13v10m4-7v4" />
+    </Svg>
+  );
+}
+
+function SendIcon({ color = "#fff", size = 24 }: { color?: string; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path fill={color} d="M3 20v-6l8-2l-8-2V4l19 8z" />
+    </Svg>
+  );
 }
 
 export default function MainScreen({ navigation }: Props) {
@@ -44,7 +71,19 @@ export default function MainScreen({ navigation }: Props) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [pointsColor, setPointsColor] = useState("#3b82f6");
   const [captureInterval, setCaptureInterval] = useState(60);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [isLetterFocused, setIsLetterFocused] = useState(false);
+
+  const menuAnim = useRef(new Animated.Value(0)).current;
+
+  const openMenu = () => {
+    setMenuVisible(true);
+    Animated.timing(menuAnim, { toValue: 1, duration: 220, useNativeDriver: true }).start();
+  };
+
+  const closeMenu = () => {
+    Animated.timing(menuAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => setMenuVisible(false));
+  };
 
   const captureActiveRef = useRef(false);
   const webViewRef = useRef<WebView>(null);
@@ -85,9 +124,6 @@ export default function MainScreen({ navigation }: Props) {
     isTraining, trainingMessage, trainLetters,
     isTrainingWords, trainingWordsMessage, trainWords,
     isTrainingDynamic, trainingDynamicMessage, trainDynamic,
-    isUploading, uploadMessage, uploadToCollaborative,
-    isDownloading, downloadMessage, downloadCollaborativeModel,
-    eligibility, checkEligibilityForType,
   } = useModelTraining();
 
   const handleAutoTranslated = useCallback((label: string, confidence: number) => {
@@ -218,7 +254,7 @@ export default function MainScreen({ navigation }: Props) {
   return (
     <View style={styles.root}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => setMenuOpen(true)} style={styles.headerBtn}>
+        <TouchableOpacity onPress={openMenu} style={styles.headerBtn}>
           <Text style={styles.headerBtnText}>☰</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>SIGNUM</Text>
@@ -227,27 +263,29 @@ export default function MainScreen({ navigation }: Props) {
         </TouchableOpacity>
       </View>
 
-      {menuOpen && (
+      {menuVisible && (
         <View style={styles.menuOverlay}>
-          <TouchableOpacity style={styles.menuBackdrop} onPress={() => setMenuOpen(false)} />
-          <View style={styles.menuPanel}>
+          <Animated.View style={[styles.menuBackdrop, { opacity: menuAnim }]}>
+            <TouchableOpacity style={styles.menuBackdropTouch} onPress={closeMenu} />
+          </Animated.View>
+          <Animated.View style={[styles.menuPanel, { transform: [{ translateX: menuAnim.interpolate({ inputRange: [0, 1], outputRange: [-300, 0] }) }] }]}>
             <Text style={styles.menuTitle}>Opciones</Text>
-            <TouchableOpacity onPress={() => { setMenuOpen(false); }} style={styles.menuItem}>
+            <TouchableOpacity onPress={closeMenu} style={styles.menuItem}>
               <Text style={styles.menuItemText}>Registrar palabras</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => { setMenuOpen(false); navigation.navigate("Stats"); }} style={styles.menuItem}>
+            <TouchableOpacity onPress={() => { closeMenu(); navigation.navigate("Stats"); }} style={styles.menuItem}>
               <Text style={styles.menuItemText}>Estadísticas</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => { setMenuOpen(false); navigation.navigate("Profile"); }} style={styles.menuItem}>
+            <TouchableOpacity onPress={() => { closeMenu(); navigation.navigate("Profile"); }} style={styles.menuItem}>
               <Text style={styles.menuItemText}>Perfil</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => { setMenuOpen(false); navigation.navigate("Settings"); }} style={styles.menuItem}>
+            <TouchableOpacity onPress={() => { closeMenu(); navigation.navigate("Settings"); }} style={styles.menuItem}>
               <Text style={styles.menuItemText}>Ajustes</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => { setMenuOpen(false); navigation.navigate("About"); }} style={styles.menuItem}>
+            <TouchableOpacity onPress={() => { closeMenu(); navigation.navigate("About"); }} style={styles.menuItem}>
               <Text style={styles.menuItemText}>Acerca de</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         </View>
       )}
 
@@ -293,7 +331,7 @@ export default function MainScreen({ navigation }: Props) {
 
           <View style={styles.cameraControls}>
             <TouchableOpacity onPress={toggleCamera} style={styles.camBtn}>
-              <Text style={{ fontSize: 24, color: "#fff" }}>{cameraOn ? "⏹" : "▶"}</Text>
+              <CameraIcon size={26} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setIsMirrored((p) => {
@@ -303,10 +341,10 @@ export default function MainScreen({ navigation }: Props) {
               })}
               style={[styles.camBtn, isMirrored && { backgroundColor: Colors.primary }]}
             >
-              <Text style={{ fontSize: 20, color: "#fff" }}>⇔</Text>
+              <MirrorIcon size={24} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleSpeakPhrase} style={styles.camBtn}>
-              <IconSVG name="mic" />
+              <VoicesIcon size={24} />
             </TouchableOpacity>
           </View>
         </View>
@@ -332,9 +370,11 @@ export default function MainScreen({ navigation }: Props) {
                 </Text>
                 <View style={styles.captureInputRow}>
                   <TextInput
-                    style={styles.letterInput}
+                    style={[styles.letterInput, isLetterFocused && styles.letterInputFocused]}
                     value={letterToCapture}
                     onChangeText={(t) => { setLetterToCapture(t.toUpperCase().slice(0, 1)); setWordToCapture(""); setDynamicToCapture(""); }}
+                    onFocus={() => setIsLetterFocused(true)}
+                    onBlur={() => setIsLetterFocused(false)}
                     maxLength={1}
                     placeholder="A"
                     placeholderTextColor="#666"
@@ -344,7 +384,7 @@ export default function MainScreen({ navigation }: Props) {
                     onPress={mode === "dynamic" ? () => startDynamicRecording(letterToCapture) : () => startLetterRecording(letterToCapture)}
                     disabled={captureState.isRecording || !letterToCapture || !cameraOn}
                   >
-                    <Text style={styles.recordBtnText}>✓</Text>
+                    <SendIcon size={26} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -367,7 +407,7 @@ export default function MainScreen({ navigation }: Props) {
                     onPress={mode === "dynamic" ? () => startDynamicRecording(wordToCapture) : () => startWordRecording(wordToCapture)}
                     disabled={captureState.isRecording || !wordToCapture || !cameraOn}
                   >
-                    <Text style={styles.recordBtnText}>✓</Text>
+                    <SendIcon size={26} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -424,15 +464,15 @@ export default function MainScreen({ navigation }: Props) {
           <View style={styles.toggles}>
             <View style={styles.toggleRow}>
               <Text style={styles.toggleLabel}>Auto-Añadir</Text>
-              <Switch value={autoAddActive} onValueChange={setAutoAddActive} trackColor={{ false: "#555", true: Colors.primary }} />
+              <ToggleSwitch value={autoAddActive} onValueChange={setAutoAddActive} />
             </View>
             <View style={styles.toggleRow}>
               <Text style={styles.toggleLabel}>No repetir</Text>
-              <Switch value={preventRepeat} onValueChange={setPreventRepeat} trackColor={{ false: "#555", true: Colors.primary }} />
+              <ToggleSwitch value={preventRepeat} onValueChange={setPreventRepeat} />
             </View>
             <View style={styles.toggleRow}>
               <Text style={styles.toggleLabel}>Voz al detectar</Text>
-              <Switch value={soundOnSena} onValueChange={(v) => { setSoundOnSena(v); storage.setItem("soundOnSena", String(v)); }} trackColor={{ false: "#555", true: Colors.primary }} />
+              <ToggleSwitch value={soundOnSena} onValueChange={(v) => { setSoundOnSena(v); storage.setItem("soundOnSena", String(v)); }} />
             </View>
           </View>
         </View>
@@ -443,24 +483,6 @@ export default function MainScreen({ navigation }: Props) {
         {(trainingMessage || trainingWordsMessage || trainingDynamicMessage) ? (
           <Text style={styles.trainMsg}>{trainingMessage || trainingWordsMessage || trainingDynamicMessage}</Text>
         ) : null}
-
-        <View style={styles.collabSection}>
-          <Text style={styles.collabTitle}>Dataset Colaborativo</Text>
-          <View style={styles.collabRow}>
-            <TouchableOpacity onPress={() => uploadToCollaborative(mode as any)} disabled={isUploading || !currentUser} style={styles.collabBtn}>
-              <Text style={styles.collabBtnText}>{isUploading ? "Subiendo..." : "Contribuir"}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => downloadCollaborativeModel(mode as any).then(() => reloadModels())} disabled={isDownloading || !currentUser} style={styles.collabBtn}>
-              <Text style={styles.collabBtnText}>{isDownloading ? "Descargando..." : "Descargar modelo"}</Text>
-            </TouchableOpacity>
-          </View>
-          {uploadMessage ? <Text style={styles.collabMsg}>{uploadMessage}</Text> : null}
-          {downloadMessage ? <Text style={styles.collabMsg}>{downloadMessage}</Text> : null}
-          {eligibility && !eligibility.eligible ? (
-            <Text style={styles.eligibilityText}>Requisito: 5+ clases y 50+ muestras. Tienes {eligibility.totalClasses} clases, {eligibility.totalSamples} muestras.</Text>
-          ) : null}
-          {!currentUser ? <Text style={styles.loginHint}>Inicia sesión para usar el dataset colaborativo</Text> : null}
-        </View>
 
         <View style={{ height: 80 }} />
       </ScrollView>
@@ -496,10 +518,10 @@ const styles = StyleSheet.create({
   captureRow: { gap: 8 },
   captureLabel: { fontSize: 14, fontWeight: "600", color: Colors.text, marginBottom: 4 },
   captureInputRow: { flexDirection: "row", gap: 10, alignItems: "center" },
-  letterInput: { width: 56, height: 56, backgroundColor: "#fff", borderRadius: 12, textAlign: "center", fontSize: 28, fontWeight: "800", color: Colors.textDark },
+  letterInput: { width: 56, height: 56, backgroundColor: "#F3F3F3", borderRadius: 10, textAlign: "center", fontSize: 28, fontWeight: "800", color: Colors.textDark, borderWidth: 2, borderColor: "transparent", overflow: "hidden" },
+  letterInputFocused: { borderColor: "#4A9DEC", backgroundColor: "#fff", shadowColor: "#4A9DEC", shadowOpacity: 0.2, shadowRadius: 7, shadowOffset: { width: 0, height: 0 }, elevation: 7 },
   wordInput: { flex: 1, backgroundColor: "#fff", borderRadius: 12, padding: 14, fontSize: 16, color: Colors.textDark },
   recordBtn: { width: 56, height: 56, backgroundColor: Colors.primaryDark, borderRadius: 12, justifyContent: "center", alignItems: "center" },
-  recordBtnText: { fontSize: 24, color: "#fff", fontWeight: "700" },
   disabledBtn: { opacity: 0.4 },
   dynamicRecordingPanel: { backgroundColor: "rgba(15,23,42,0.15)", borderRadius: 16, padding: 20, alignItems: "center", gap: 10, borderWidth: 2, borderColor: Colors.primaryDark, borderStyle: "dashed" },
   dynamicTitle: { fontSize: 16, fontWeight: "700", color: Colors.primaryDark },
@@ -528,16 +550,9 @@ const styles = StyleSheet.create({
   trainBtn: { backgroundColor: Colors.primaryDark, paddingVertical: 16, borderRadius: 50, alignItems: "center", marginTop: 8 },
   trainBtnText: { color: "#fff", fontSize: 16, fontWeight: "700" },
   trainMsg: { backgroundColor: "rgba(0,0,0,0.3)", padding: 8, borderRadius: 8, fontSize: 12, color: Colors.textMuted, textAlign: "center" },
-  collabSection: { borderTopWidth: 1, borderColor: "rgba(255,255,255,0.1)", paddingTop: 12, gap: 8 },
-  collabTitle: { fontSize: 13, fontWeight: "600", color: Colors.textMuted, textAlign: "center" },
-  collabRow: { flexDirection: "row", gap: 8 },
-  collabBtn: { flex: 1, paddingVertical: 10, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.06)", alignItems: "center", borderWidth: 1, borderColor: Colors.border },
-  collabBtnText: { color: Colors.textMuted, fontSize: 13, fontWeight: "600" },
-  collabMsg: { fontSize: 11, color: Colors.textMuted, textAlign: "center", backgroundColor: "rgba(0,0,0,0.2)", padding: 6, borderRadius: 6 },
-  eligibilityText: { fontSize: 11, color: Colors.warning, textAlign: "center", padding: 4 },
-  loginHint: { fontSize: 11, color: Colors.textMuted, textAlign: "center" },
   menuOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100 },
   menuBackdrop: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)" },
+  menuBackdropTouch: { flex: 1 },
   menuPanel: { position: "absolute", top: 0, left: 0, bottom: 0, width: 280, backgroundColor: Colors.surfaceSolid, padding: 24, paddingTop: 80, borderRightWidth: 1, borderColor: Colors.border },
   menuTitle: { fontSize: 18, fontWeight: "700", color: Colors.text, marginBottom: 20 },
   menuItem: { paddingVertical: 14, borderBottomWidth: 1, borderColor: "rgba(255,255,255,0.08)" },
