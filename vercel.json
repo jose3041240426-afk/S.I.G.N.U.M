@@ -1,6 +1,5 @@
 {
-  "rootDirectory": "frontend",
-  "buildCommand": "npx next build",
-  "outputDirectory": ".next",
-  "framework": "nextjs"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "rootDirectory": "frontend"
 }
