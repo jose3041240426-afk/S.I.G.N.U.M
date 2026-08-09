@@ -313,6 +313,7 @@ export default function MainScreen({ navigation }: Props) {
               allowFileAccess
               allowsInlineMediaPlayback
               mediaPlaybackRequiresUserAction={false}
+              mediaCapturePermissionGrantType="grant"
               startInLoadingState
               originWhitelist={["*"]}
               renderLoading={() => (

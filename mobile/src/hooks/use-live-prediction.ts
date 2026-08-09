@@ -364,29 +364,24 @@ export function useLivePrediction(
   }, [loadLocalModels]);
 
   const toggleCamera = useCallback(async () => {
-    setCameraOn((prev) => {
-      if (prev) {
-        setData((prev2) => ({ ...prev2, mediapipeReady: false, handDetected: false }));
-        return false;
-      }
-      return true;
-    });
-    if (cameraOn) return;
+    if (cameraOn) {
+      setCameraOn(false);
+      setData((prev) => ({ ...prev, mediapipeReady: false, handDetected: false }));
+      return;
+    }
 
     try {
       const perm = await Camera.requestCameraPermissionsAsync();
       if (perm.status !== "granted") {
-        setCameraOn(false);
         setCameraError(
           "Permiso de cámara denegado. Activa el acceso a la cámara en los ajustes del sistema y vuelve a intentarlo.",
         );
         return;
       }
       setCameraError(null);
+      setCameraOn(true);
     } catch (e) {
-      setCameraOn(false);
       setCameraError("No se pudo solicitar el permiso de cámara.");
-      return;
     }
   }, [cameraOn]);
 

@@ -172,6 +172,8 @@ export async function finishCapture(): Promise<void> {
   if (!currentCapture) return;
 
   const { type, label, samples, onComplete } = currentCapture;
+  currentCapture = null;
+
   const records = samples.map((landmarks) => ({
     label,
     type,
@@ -186,7 +188,6 @@ export async function finishCapture(): Promise<void> {
   }
 
   onComplete();
-  currentCapture = null;
 }
 
 export function cancelCapture(): void {

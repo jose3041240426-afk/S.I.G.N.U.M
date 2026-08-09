@@ -35,18 +35,19 @@ export default function Home() {
           marginBottom: "1rem",
         }}
       >
-        <div
-          style={{
-            width: 96,
-            height: 76,
-            overflow: "hidden",
-            borderRadius: "12px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            filter: "drop-shadow(0 0 10px rgba(var(--color-primary-rgb, 59, 130, 246), 0.5))",
-          }}
-        >
+          <div
+            style={{
+              width: 96,
+              height: 76,
+              overflow: "hidden",
+              borderRadius: "12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "1.75rem",
+              filter: "drop-shadow(0 0 10px rgba(var(--color-primary-rgb, 59, 130, 246), 0.5))",
+            }}
+          >
           <img
             src="/Logo_Final.svg"
             alt="SIGNUM"
@@ -69,7 +70,7 @@ export default function Home() {
           fontSize: "1.15rem",
           opacity: 0.85,
           marginTop: "0.5rem",
-          marginBottom: "3rem",
+          marginBottom: "1.5rem",
           textAlign: "center",
         }}
       >
