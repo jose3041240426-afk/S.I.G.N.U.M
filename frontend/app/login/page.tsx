@@ -151,7 +151,7 @@ export default function LoginPage() {
           ¿No tienes cuenta?{" "}
           <a
             href="/register"
-            style={{ color: "var(--color-primary-light, #60a5fa)", textDecoration: "none", fontWeight: 600 }}
+            style={{ color: "#9ca3af", textDecoration: "none", fontWeight: 600 }}
           >
             Registrarse
           </a>

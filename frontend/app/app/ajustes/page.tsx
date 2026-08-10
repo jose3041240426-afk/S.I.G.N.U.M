@@ -125,6 +125,7 @@ export default function AjustesPage() {
 
       window.dispatchEvent(new Event("glassBorderChange"));
       window.dispatchEvent(new Event("fontScaleChange"));
+      window.dispatchEvent(new Event("settingsChanged"));
 
       colorsPanelRef.current?.save();
 
@@ -239,9 +240,9 @@ export default function AjustesPage() {
         }
 
         @keyframes toastBounce {
-          0% { opacity: 0; transform: translateY(-14px) scale(0.94); }
-          60% { opacity: 1; transform: translateY(3px) scale(1.02); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
+          0% { opacity: 0; transform: translate(-50%, -14px) scale(0.94); }
+          60% { opacity: 1; transform: translate(-50%, 3px) scale(1.02); }
+          100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
 
         @keyframes confirmPop {

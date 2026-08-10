@@ -106,9 +106,14 @@ export default function Home() {
     addWord,
     addSpace,
     backspace,
+    clear,
     tryAutoAdd,
     resetStableCount,
+    confidenceMin,
+    stableFrames,
   } = usePhraseBuilder(handleAutoTranslated);
+
+  const stablePredictionRef = useRef({ label: "", confidence: 0, isWord: false, startTime: 0 });
 
   const { speak, speakPhrase, resetLastSpoken } = useTTS();
 
@@ -164,6 +169,8 @@ export default function Home() {
     return false;
   });
   const [autoCountdown, setAutoCountdown] = useState(0);
+  const [staticCountdown, setStaticCountdown] = useState(0);
+  const pendingCaptureRef = useRef<null | (() => Promise<void>)>(null);
   const [autoDuration, setAutoDuration] = useState(3);
   const [autoMotionThreshold, setAutoMotionThreshold] = useState(0.015);
   const [autoInstantThreshold, setAutoInstantThreshold] = useState(0.025);
@@ -235,14 +242,45 @@ export default function Home() {
   }, [captureState.isRecording, captureState.isSampleRecording, captureState.samplesCount, captureState.requiredSamples, predictionMode, startManualSample]);
 
   useEffect(() => {
+    if (staticCountdown <= 0) {
+      pendingCaptureRef.current = null;
+      return;
+    }
+    let count = staticCountdown;
+    const interval = setInterval(() => {
+      count -= 1;
+      if (count <= 0) {
+        clearInterval(interval);
+        setStaticCountdown(0);
+        const fn = pendingCaptureRef.current;
+        pendingCaptureRef.current = null;
+        if (fn) {
+          fn().catch(() => setStatusMessage("Error al iniciar registro."));
+        }
+      } else {
+        setStaticCountdown(count);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [staticCountdown, setStatusMessage]);
+
+  useEffect(() => {
     if (
       captureState.isRecording &&
       predictionMode === "dynamic" &&
       captureState.isSampleRecording
     ) {
+      let speed = 60;
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("captureSpeed");
+        if (saved) speed = parseInt(saved, 10);
+      }
+      // DYNAMIC_FRAMES_PER_SEQUENCE es 50, así que calculamos el tiempo exacto
+      const durationMs = speed * 50;
+
       const timer = setTimeout(() => {
         stopManualSample();
-      }, 3000);
+      }, durationMs);
       return () => clearTimeout(timer);
     }
   }, [captureState.isRecording, captureState.isSampleRecording, predictionMode, stopManualSample]);
@@ -287,29 +325,73 @@ export default function Home() {
   ]);
 
   useEffect(() => {
-    if (!liveData.handDetected || !autoAddActive) return;
+    if (!autoAddActive) return;
+
+    const interval = setInterval(() => {
+      const { label, confidence, isWord, startTime } = stablePredictionRef.current;
+      if (label && startTime > 0) {
+        const elapsed = performance.now() - startTime;
+        const requiredTime = confidenceMin === 0 ? 0 : stableFrames * 33; // Approx 33ms per frame
+        if (elapsed >= requiredTime) {
+          tryAutoAdd(label, confidence, isWord);
+          // Prevenimos agregar la misma seña hasta que desaparezca o cambie
+          stablePredictionRef.current.startTime = 0;
+        }
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [autoAddActive, stableFrames, tryAutoAdd, confidenceMin]);
+
+  useEffect(() => {
+    if (!liveData.handDetected) {
+      const timer = setTimeout(() => {
+        resetStableCount();
+        stablePredictionRef.current = { label: "", confidence: 0, isWord: false, startTime: 0 };
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [liveData.handDetected, resetStableCount]);
+
+  useEffect(() => {
+    if (!liveData.handDetected || !autoAddActive) {
+      stablePredictionRef.current = { label: "", confidence: 0, isWord: false, startTime: 0 };
+      return;
+    }
 
     let currentPrediction = "";
     let currentConfidence = 0;
     let isWord = false;
 
-    if (liveData.letter && liveData.confidence >= 55 && liveData.confidence > currentConfidence) {
+    if (liveData.letter && liveData.confidence >= confidenceMin && liveData.confidence > currentConfidence) {
       currentPrediction = liveData.letter;
       currentConfidence = liveData.confidence;
+      isWord = false;
     }
-    if (liveData.word && liveData.wordConfidence >= 80 && liveData.wordConfidence > currentConfidence) {
+    if (liveData.word && liveData.wordConfidence >= confidenceMin && liveData.wordConfidence > currentConfidence) {
       currentPrediction = liveData.word;
       currentConfidence = liveData.wordConfidence;
       isWord = true;
     }
-    if (liveData.dynamicSign && liveData.dynamicConfidence >= 80 && liveData.dynamicConfidence > currentConfidence) {
+    if (liveData.dynamicSign && liveData.dynamicConfidence >= confidenceMin && liveData.dynamicConfidence > currentConfidence) {
       currentPrediction = liveData.dynamicSign;
       currentConfidence = liveData.dynamicConfidence;
       isWord = true;
     }
 
     if (currentPrediction) {
-      tryAutoAdd(currentPrediction, currentConfidence, isWord);
+      if (stablePredictionRef.current.label !== currentPrediction) {
+        stablePredictionRef.current = {
+          label: currentPrediction,
+          confidence: currentConfidence,
+          isWord: isWord,
+          startTime: performance.now()
+        };
+      } else {
+        stablePredictionRef.current.confidence = currentConfidence;
+      }
+    } else {
+      stablePredictionRef.current = { label: "", confidence: 0, isWord: false, startTime: 0 };
     }
   }, [
     liveData.letter,
@@ -320,27 +402,26 @@ export default function Home() {
     liveData.wordConfidence,
     liveData.dynamicConfidence,
     autoAddActive,
-    tryAutoAdd,
+    confidenceMin,
+    predictionMode,
   ]);
 
   const startLetterCapture = useCallback(async () => {
     if (!letterToCapture) return;
-    try {
+    setStaticCountdown(3);
+    pendingCaptureRef.current = async () => {
       await startLetterRecording(letterToCapture);
       setStatusMessage(`Registrando letra '${letterToCapture}'...`);
-    } catch {
-      setStatusMessage("Error al iniciar registro.");
-    }
+    };
   }, [letterToCapture, startLetterRecording]);
 
   const startWordCapture = useCallback(async () => {
     if (!wordToCapture) return;
-    try {
+    setStaticCountdown(3);
+    pendingCaptureRef.current = async () => {
       await startWordRecording(wordToCapture);
       setStatusMessage(`Registrando palabra '${wordToCapture}'...`);
-    } catch {
-      setStatusMessage("Error al iniciar registro de palabra.");
-    }
+    };
   }, [wordToCapture, startWordRecording]);
 
   const startDynamicCapture = useCallback(async () => {
@@ -457,6 +538,8 @@ export default function Home() {
   const handleSetPredictionMode = useCallback(
     (mode: string) => {
       setPredictionMode(mode);
+      setStaticCountdown(0);
+      pendingCaptureRef.current = null;
       resetLastSpoken();
       lastSpokenPredictionRef.current = "";
       setAutoLastResult(null);
@@ -1067,6 +1150,25 @@ export default function Home() {
                         <path d="M8 12l3 3 5-5" />
                       </svg>
                     </button>
+                    {staticCountdown > 0 && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: "rgba(124, 58, 237, 0.1)",
+                          border: "1px solid rgba(124, 58, 237, 0.3)",
+                          color: "#7c3aed",
+                          borderRadius: "12px",
+                          padding: "8px 14px",
+                          fontWeight: 700,
+                        }}
+                      >
+                        <span style={{ fontSize: "0.8rem" }}>Preparate...</span>
+                        <span style={{ fontSize: "1.6rem", fontWeight: 800, lineHeight: 1 }}>{staticCountdown}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1139,6 +1241,26 @@ export default function Home() {
                         <path d="M8 12l3 3 5-5" />
                       </svg>
                     </button>
+                    {staticCountdown > 0 && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: "rgba(124, 58, 237, 0.1)",
+                          border: "1px solid rgba(124, 58, 237, 0.3)",
+                          color: "#7c3aed",
+                          borderRadius: "12px",
+                          padding: "8px 14px",
+                          fontWeight: 700,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <span style={{ fontSize: "0.8rem" }}>Preparate...</span>
+                        <span style={{ fontSize: "1.6rem", fontWeight: 800, lineHeight: 1 }}>{staticCountdown}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1262,19 +1384,23 @@ export default function Home() {
                         let toAdd = "";
                         let addConfidence = 0;
                         let isWord = false;
-                        if (letter && confidence >= 55) {
+
+                        if (letter) {
                           toAdd = letter;
                           addConfidence = confidence;
+                          isWord = false;
                         }
-                        if (word && wordConfidence >= 30 && wordConfidence > addConfidence) {
+                        if (word && wordConfidence > addConfidence) {
                           toAdd = word;
                           addConfidence = wordConfidence;
                           isWord = true;
                         }
-                        if (dynamicSign && dynamicConfidence >= 30 && dynamicConfidence > addConfidence) {
+                        if (dynamicSign && dynamicConfidence > addConfidence) {
                           toAdd = dynamicSign;
+                          addConfidence = dynamicConfidence;
                           isWord = true;
                         }
+
                         if (!toAdd) return;
                         if (isWord) addWord(toAdd.trim());
                         else addLetter(toAdd.trim());
@@ -1312,18 +1438,37 @@ export default function Home() {
                       Borrar
                     </button>
                     <button
-                      onClick={handleAIComplete}
-                      disabled={isCompleting || phrase.length < 3}
-                      title="Completar frase con Inteligencia Artificial"
+                      onClick={clear}
+                      disabled={!phrase}
+                      title="Borrar toda la frase"
                       style={{
                         padding: "6px 12px",
                         borderRadius: "8px",
-                        border: "1px solid #a855f7",
-                        background: isCompleting ? "rgba(168,85,247,0.3)" : "rgba(168,85,247,0.1)",
+                        border: "1px solid var(--color-primary, #3b82f6)",
+                        background: "var(--color-primary, #3b82f6)",
+                        cursor: phrase ? "pointer" : "not-allowed",
+                        fontSize: "0.85rem",
+                        fontWeight: 600,
+                        color: "var(--color-primary-text, #ffffff)",
+                        opacity: phrase ? 1 : 0.5,
+                      }}
+                    >
+                      Borrar todo
+                    </button>
+                    <button
+                      onClick={handleAIComplete}
+                      disabled={isCompleting || phrase.length < 3}
+                      title="Completar frase con Inteligencia Artificial"
+                      className="btn-ia"
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "8px",
+                        border: "1px solid var(--color-primary, #3b82f6)",
+                        background: "var(--color-primary, #3b82f6)",
                         cursor: isCompleting || phrase.length < 3 ? "not-allowed" : "pointer",
                         fontSize: "0.85rem",
                         fontWeight: 600,
-                        color: isCompleting ? "#c4b5fd" : "#c084fc",
+                        color: "var(--color-primary-text, #ffffff)",
                         opacity: isCompleting || phrase.length < 3 ? 0.5 : 1,
                         display: "flex",
                         alignItems: "center",
@@ -1442,7 +1587,7 @@ export default function Home() {
                 fontSize: "0.85rem",
                 color: "#fff",
                 textAlign: "center",
-                background: "rgba(0,0,0,0.3)",
+                background: "var(--color-primary, #3b82f6)",
                 padding: "8px 16px",
                 borderRadius: "8px",
                 marginTop: "16px",

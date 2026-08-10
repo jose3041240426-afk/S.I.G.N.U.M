@@ -258,9 +258,6 @@ export default function MainScreen({ navigation }: Props) {
           <Text style={styles.headerBtnText}>☰</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>SIGNUM</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Settings")} style={styles.headerBtn}>
-          <Text style={styles.headerBtnText}>⚙</Text>
-        </TouchableOpacity>
       </View>
 
       {menuVisible && (
@@ -493,8 +490,8 @@ export default function MainScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.background },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingTop: 48, paddingBottom: 12, borderBottomWidth: 1, borderColor: Colors.border },
-  headerTitle: { fontSize: 22, fontWeight: "800", color: Colors.text, letterSpacing: 1 },
+  header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 48, paddingBottom: 12, borderBottomWidth: 1, borderColor: Colors.border, position: "relative" },
+  headerTitle: { fontSize: 22, fontWeight: "800", color: Colors.text, letterSpacing: 1, position: "absolute", left: 0, right: 0, top: 56, textAlign: "center", textAlignVertical: "center", display: "flex", alignItems: "center", justifyContent: "center" },
   headerBtn: { padding: 8 },
   headerBtnText: { fontSize: 22, color: Colors.text },
   scroll: { flex: 1 },

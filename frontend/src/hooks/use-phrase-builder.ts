@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ENV } from "@/lib/env";
 
 export function usePhraseBuilder(onAdd?: (label: string, confidence: number, isWord: boolean) => void) {
@@ -24,7 +24,7 @@ export function usePhraseBuilder(onAdd?: (label: string, confidence: number, isW
   const lastPredictedRef = useRef("");
   const stableCountRef = useRef(0);
 
-  const [confidenceMin] = useState(() => {
+  const [confidenceMin, setConfidenceMin] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("autoAddConfidence");
       return saved ? parseInt(saved, 10) : ENV.AUTO_ADD_CONFIDENCE_MIN;
@@ -32,7 +32,7 @@ export function usePhraseBuilder(onAdd?: (label: string, confidence: number, isW
     return ENV.AUTO_ADD_CONFIDENCE_MIN;
   });
 
-  const [stableFrames] = useState(() => {
+  const [stableFrames, setStableFrames] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("autoAddStableFrames");
       return saved ? parseInt(saved, 10) : ENV.AUTO_ADD_STABLE_FRAMES;
@@ -40,9 +40,25 @@ export function usePhraseBuilder(onAdd?: (label: string, confidence: number, isW
     return ENV.AUTO_ADD_STABLE_FRAMES;
   });
 
+  // Re-read settings when they change (from the settings page or another tab)
+  useEffect(() => {
+    const handleSettingsChange = () => {
+      const savedConf = localStorage.getItem("autoAddConfidence");
+      setConfidenceMin(savedConf ? parseInt(savedConf, 10) : ENV.AUTO_ADD_CONFIDENCE_MIN);
+      const savedFrames = localStorage.getItem("autoAddStableFrames");
+      setStableFrames(savedFrames ? parseInt(savedFrames, 10) : ENV.AUTO_ADD_STABLE_FRAMES);
+    };
+    window.addEventListener("settingsChanged", handleSettingsChange);
+    window.addEventListener("storage", handleSettingsChange);
+    return () => {
+      window.removeEventListener("settingsChanged", handleSettingsChange);
+      window.removeEventListener("storage", handleSettingsChange);
+    };
+  }, []);
+
   const addLetter = useCallback((letter: string) => {
     setPhrase((prev) => {
-      if (preventRepeat && lastAddedRef.current === letter) {
+      if (preventRepeat && prev.endsWith(letter)) {
         return prev;
       }
       return prev + letter;
@@ -55,12 +71,15 @@ export function usePhraseBuilder(onAdd?: (label: string, confidence: number, isW
     setPhrase((prev) => {
       const trimmed = word.trim();
       if (!trimmed) return prev;
+      if (preventRepeat && prev.endsWith(trimmed)) {
+        return prev;
+      }
       const needSpace = prev.length > 0 && !prev.endsWith(" ");
       return prev + (needSpace ? " " : "") + trimmed;
     });
     lastAddedRef.current = word.trim();
     stableCountRef.current = 0;
-  }, []);
+  }, [preventRepeat]);
 
   const addSpace = useCallback(() => {
     setPhrase((prev) => prev + " ");
@@ -84,31 +103,21 @@ export function usePhraseBuilder(onAdd?: (label: string, confidence: number, isW
     if (confidence < confidenceMin) return;
 
     const normalized = label.trim();
+    if (!normalized) return;
 
-    // Si la predicción cambió respecto al frame anterior, reiniciamos contador
-    if (normalized !== lastPredictedRef.current) {
-      lastPredictedRef.current = normalized;
-      stableCountRef.current = 1;
-      return;
-    }
-
-    // Si es igual a lo que acabamos de agregar hace un momento, no duplicamos
+    // Si es exactamente lo que acabamos de agregar en el ciclo actual, prevenimos duplicado
     if (normalized === lastAddedRef.current) {
-      stableCountRef.current = 0;
       return;
     }
 
-    stableCountRef.current += 1;
-    if (stableCountRef.current >= stableFrames) {
-      if (isWord) addWord(normalized);
-      else addLetter(normalized);
-      onAdd?.(normalized, confidence, isWord);
-      stableCountRef.current = 0;
-    }
-  }, [autoAddActive, addLetter, addWord, confidenceMin, stableFrames, onAdd]);
+    if (isWord) addWord(normalized);
+    else addLetter(normalized);
+    onAdd?.(normalized, confidence, isWord);
+    lastAddedRef.current = normalized;
+    
+  }, [autoAddActive, addLetter, addWord, confidenceMin, onAdd]);
 
   const resetStableCount = useCallback(() => {
-    stableCountRef.current = 0;
     lastAddedRef.current = "";
     lastPredictedRef.current = "";
   }, []);
@@ -127,5 +136,7 @@ export function usePhraseBuilder(onAdd?: (label: string, confidence: number, isW
     clear,
     tryAutoAdd,
     resetStableCount,
+    confidenceMin,
+    stableFrames,
   };
 }

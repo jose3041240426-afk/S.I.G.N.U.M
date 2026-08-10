@@ -14,6 +14,7 @@ import StatsScreen from "@/screens/StatsScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
 import AboutScreen from "@/screens/AboutScreen";
 import ReferencesScreen from "@/screens/ReferencesScreen";
+import EvaluationScreen from "@/screens/EvaluationScreen";
 
 export type RootStackParamList = {
   Landing: undefined;
@@ -25,6 +26,7 @@ export type RootStackParamList = {
   Settings: undefined;
   About: undefined;
   References: undefined;
+  Evaluation: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -79,6 +81,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="About" component={AboutScreen} />
         <Stack.Screen name="References" component={ReferencesScreen} />
+        <Stack.Screen name="Evaluation" component={EvaluationScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

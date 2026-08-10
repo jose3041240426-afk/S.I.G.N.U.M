@@ -24,22 +24,26 @@ function findBestVoice(): SpeechSynthesisVoice | null {
 
   if (voices.length === 0) return null;
 
+  // Preferir español, luego cualquier idioma
   const pick =
     voices.find((v) => v.lang === "es-MX") ||
     voices.find((v) => v.lang.startsWith("es-")) ||
     voices.find((v) => v.lang.startsWith("es")) ||
+    voices.find((v) => v.default) ||
     voices[0];
 
   if (pick) {
     console.log(`[TTS] Selected voice: "${pick.name}" (${pick.lang})`);
   }
-  return pick || null;
+  return pick;
 }
 
 /** Waits up to ~3 s for voices to appear. Resolves to the best voice or null. */
 function waitForVoices(): Promise<SpeechSynthesisVoice | null> {
+  voiceSearchDone = false;
   return new Promise((resolve) => {
     if (typeof window === "undefined" || !window.speechSynthesis) {
+      voiceSearchDone = true;
       resolve(null);
       return;
     }
@@ -111,7 +115,6 @@ function speakWithNativeAPI(text: string, voice: SpeechSynthesisVoice): Promise<
     utterance.voice = voice;
     utterance.lang = voice.lang || "es-MX";
     
-    // Obtener valores personalizados de la configuración
     const savedRate = typeof window !== "undefined" ? window.localStorage.getItem("ttsRate") : null;
     const savedPitch = typeof window !== "undefined" ? window.localStorage.getItem("ttsPitch") : null;
     
@@ -126,17 +129,15 @@ function speakWithNativeAPI(text: string, voice: SpeechSynthesisVoice): Promise<
       resolve(success);
     };
 
-    // Safety timeout – if neither onend nor onerror fires in 8 s,
-    // consider it a silent failure.
     const timer = setTimeout(() => {
-      console.warn("[TTS] Native speech timed out (8 s). Treating as failure.");
+      console.warn("[TTS] Native speech timed out (8 s).");
       synth.cancel();
       settle(false);
     }, 8000);
 
     utterance.onend = () => {
       clearTimeout(timer);
-      console.log("[TTS] Native speech finished successfully.");
+      console.log("[TTS] Native speech finished.");
       settle(true);
     };
 
@@ -149,21 +150,9 @@ function speakWithNativeAPI(text: string, voice: SpeechSynthesisVoice): Promise<
     try {
       synth.speak(utterance);
 
-      // Chrome bug: the queue can freeze in "paused" state after cancel().
-      // Poking resume() fixes it.
       if (synth.paused) {
         synth.resume();
       }
-
-      // Extra paranoia: Chrome sometimes fires nothing at all for very short texts.
-      // A brief check after 200 ms to see if speaking actually started.
-      setTimeout(() => {
-        if (!settled && !synth.speaking && !synth.pending) {
-          console.warn("[TTS] Native speech did not start after 200 ms.");
-          clearTimeout(timer);
-          settle(false);
-        }
-      }, 200);
     } catch (e) {
       console.error("[TTS] synth.speak() threw:", e);
       clearTimeout(timer);
@@ -222,8 +211,12 @@ async function speakElevenlabs(text: string): Promise<boolean> {
     elevenlabsAudio.src = url;
     elevenlabsAudio.volume = 1.0;
 
+    let success = false;
     await new Promise<void>((resolve) => {
-      elevenlabsAudio!.onended = () => resolve();
+      elevenlabsAudio!.onended = () => {
+        success = true;
+        resolve();
+      };
       elevenlabsAudio!.onerror = (e) => {
         console.error("[TTS] ElevenLabs audio error", e);
         resolve();
@@ -241,7 +234,7 @@ async function speakElevenlabs(text: string): Promise<boolean> {
       setTimeout(() => resolve(), 15000);
     });
 
-    return true;
+    return success;
   } catch (e) {
     console.error("[TTS] ElevenLabs exception", e);
     return false;
@@ -271,14 +264,36 @@ export async function speak(text: string): Promise<void> {
     const ok = await speakElevenlabs(text);
     if (ok) return;
     console.log("[TTS] ElevenLabs failed, falling back to native.");
+    // Fall through to native as backup
   }
 
-  const voice = cachedVoice ?? (voicePromise ? await voicePromise : null);
+  // Try native speech
+  let voice = cachedVoice;
+  if (!voice) {
+    voice = await waitForVoices();
+  }
+
+  // Chrome on Linux sometimes needs a kick — retry once
+  if (!voice && window.speechSynthesis) {
+    window.speechSynthesis.getVoices(); // trigger lazy load
+    await new Promise((r) => setTimeout(r, 300));
+    voice = findBestVoice();
+    if (voice) cachedVoice = voice;
+  }
+
   if (voice) {
     await speakWithNativeAPI(text, voice);
-  } else {
-    console.warn("[TTS] No native voices available.");
+    return;
   }
+
+  // Only fall back to ElevenLabs if the user DIDN'T explicitly choose native
+  if (provider !== "native") {
+    console.log("[TTS] No native voices, trying ElevenLabs fallback.");
+    const ok = await speakElevenlabs(text);
+    if (ok) return;
+  }
+
+  console.warn("[TTS] TTS could not speak — no voices available for the selected provider.");
 }
 
 // Kept for backwards compatibility – now delegates to speak()

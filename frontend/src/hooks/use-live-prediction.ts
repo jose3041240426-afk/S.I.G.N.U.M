@@ -110,8 +110,8 @@ export function useLivePrediction(
 
   const lastMotionLandmarksRef = useRef<number[] | null>(null);
   const lastSignificantMotionTimeRef = useRef<number>(0);
-  const MOTION_THRESHOLD = 0.018;
-  const MOTION_TIMEOUT_MS = 500;
+  const MOTION_THRESHOLD = 0.04;
+  const MOTION_TIMEOUT_MS = 1500;
 
   modeRef.current = mode;
 
@@ -454,7 +454,7 @@ export function useLivePrediction(
               wordSmoothed = null;
             }
           }
-        } else {
+        } else if (dynamicSmoothed) {
           letterSmoothed = null;
           wordSmoothed = null;
         }

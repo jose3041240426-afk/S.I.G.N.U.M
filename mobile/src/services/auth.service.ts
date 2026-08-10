@@ -210,7 +210,6 @@ export async function recordTranslation(
     if (updateError) throw updateError;
   }
 }
-
 export async function recordActiveTime(userId: string, minutesToAdd: number = 1) {
   const today = new Date().toISOString().split("T")[0];
 
@@ -240,4 +239,61 @@ export async function recordActiveTime(userId: string, minutesToAdd: number = 1)
       })
       .eq("id_avance", avanceData.id_avance);
   }
+}
+
+export interface EvaluacionData {
+  resolucion: string;
+  iluminacion: string;
+  distancia: string;
+  p4_uso_frecuente: number | null;
+  p5_complicado: number | null;
+  p6_facil_interactuar: number | null;
+  p7_necesita_ayuda: number | null;
+  p8_traduccion_natural: number | null;
+  voz_satisfaccion: number | null;
+  esfuerzo_mental: string;
+  dispositivo: string;
+  navegador: string;
+  experiencia_previa: string;
+  problemas: string;
+  sugerencias: string;
+  experiencia_general: number | null;
+  recomendaria: string;
+  facil_aprender: number | null;
+  util_educativo: number | null;
+  funcion_mas_util: string;
+  senas_dificiles: string;
+}
+
+export async function saveEvaluation(data: EvaluacionData) {
+  const { data: userRes, error: userError } = await supabase.auth.getUser();
+  if (userError) throw new Error("Debes iniciar sesión para enviar la evaluación.");
+  if (!userRes?.user) throw new Error("Debes iniciar sesión para enviar la evaluación.");
+
+  const userId = userRes.user.id;
+
+  const { error: perfilError } = await supabase
+    .from("usuarios")
+    .upsert(
+      {
+        id_usuario: userId,
+        nombre: (userRes.user.user_metadata?.nombre as string) || "",
+        apellido_paterno: (userRes.user.user_metadata?.apellido_paterno as string) || "",
+        apellido_materno: (userRes.user.user_metadata?.apellido_materno as string) || "",
+        correo: userRes.user.email || "",
+        id_genero: Number(userRes.user.user_metadata?.id_genero) || 1,
+      },
+      { onConflict: "id_usuario" },
+    );
+
+  if (perfilError && perfilError.code !== "23505") {
+    throw perfilError;
+  }
+
+  const { error } = await supabase.from("evaluaciones").insert({
+    id_usuario: userId,
+    ...data,
+  });
+
+  if (error) throw error;
 }

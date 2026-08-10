@@ -164,6 +164,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           fill: transparent;
           animation: drawText 2.5s ease-in-out forwards, fillText 0.5s ease 2s forwards;
         }
+        .btn-ia {
+          transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .btn-ia:hover:not(:disabled) {
+          background: var(--color-primary, #3b82f6) !important;
+          color: var(--color-primary-text, #ffffff) !important;
+          border-color: var(--color-primary, #3b82f6) !important;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary, #3b82f6) 50%, transparent);
+        }
         :root {
           --glass-border: ${glassBorder}px solid rgba(255, 255, 255, 0.3);
           --general-text-color: ${effectiveGeneralText};

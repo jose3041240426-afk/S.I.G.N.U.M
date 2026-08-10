@@ -180,7 +180,7 @@ export default function RegisterPage() {
 
         <div style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "0.9rem", opacity: 0.7 }}>
           ¿Ya tienes cuenta?{" "}
-          <a href="/login" style={{ color: "var(--color-primary-light, #60a5fa)", textDecoration: "none", fontWeight: 600 }}>
+          <a href="/login" style={{ color: "#9ca3af", textDecoration: "none", fontWeight: 600 }}>
             Iniciar sesión
           </a>
         </div>

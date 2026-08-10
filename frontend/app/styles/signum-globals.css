@@ -85,15 +85,6 @@
     0 0 10px color-mix(in srgb, rgb(var(--color-primary-rgb, 59, 130, 246)) 40%, transparent) inset;
 }
 
-/* Auto */
-#mode-auto:checked ~ .glass-glider {
-  transform: translateX(300%);
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.85), rgba(91, 33, 182, 1));
-  box-shadow:
-    0 0 18px rgba(124, 58, 237, 0.55),
-    0 0 10px rgba(167, 139, 250, 0.4) inset;
-}
-
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
